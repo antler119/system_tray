@@ -1,7 +1,6 @@
 name: system_tray
 description: Windows implementation of the system_tray plugin.
-version: 0.0.1-dev.1
-author: AnTler
+version: 0.0.1
 repository: https://github.com/antler119/system_tray.git
 
 environment:
