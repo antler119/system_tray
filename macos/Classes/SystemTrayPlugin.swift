@@ -8,6 +8,7 @@ let kMenuItemSelectedCallbackMethod = "MenuItemSelectedCallback";
 
 let kTitleKey = "title"
 let kIconPathKey = "iconpath"
+let kToolTipKey = "tooltip"
 let kIdKey = "id";
 let kTypeKey = "type";
 let kLabelKey = "label";
@@ -45,7 +46,8 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
       let arguments = call.arguments as! [String: Any]
       let title = arguments[kTitleKey] as! String
       let iconPath = arguments[kIconPathKey] as! String
-      result(system_tray?.init_system_tray(title: title, iconPath: iconPath) ?? false)
+      let toolTip = arguments[kToolTipKey] as! String
+      result(system_tray?.init_system_tray(title: title, iconPath: iconPath, toolTip: toolTip) ?? false)
   }
 
   func value_to_menu_item(menu: NSMenu, item: [String: Any]) -> Bool {

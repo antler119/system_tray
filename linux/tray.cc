@@ -11,7 +11,9 @@
 #include <string.h>
 #include <unistd.h>
 
-bool SystemTray::init_system_tray(const char* title, const char* iconPath) {
+bool SystemTray::init_system_tray(const char* title,
+                                  const char* iconPath,
+                                  const char* toolTip) {
   printf("SystemTray::init_system_tray\n");
 
   bool ret = false;
@@ -21,7 +23,7 @@ bool SystemTray::init_system_tray(const char* title, const char* iconPath) {
       break;
     }
 
-    if (!create_indicator(title, iconPath)) {
+    if (!create_indicator(title, iconPath, toolTip)) {
       break;
     }
 
@@ -61,9 +63,11 @@ bool SystemTray::init_indicator_api() {
   return ret;
 }
 
-bool SystemTray::create_indicator(const char* title, const char* iconPath) {
-  printf("SystemTray::create_indicator title: %s, iconPath: %s\n", title,
-         iconPath);
+bool SystemTray::create_indicator(const char* title,
+                                  const char* iconPath,
+                                  const char* toolTip) {
+  printf("SystemTray::create_indicator title: %s, iconPath: %s, toolTip: %s\n",
+         title, iconPath, toolTip);
 
   bool ret = false;
 

@@ -10,6 +10,9 @@ const String _kInitSystemTray = "InitSystemTray";
 const String _kSetContextMenu = "SetContextMenu";
 const String _kMenuItemSelectedCallbackMethod = 'MenuItemSelectedCallback';
 
+const String _kTitleKey = "title";
+const String _kIconPathKey = "iconpath";
+const String _kToolTipKey = "tooltip";
 const String _kIdKey = 'id';
 const String _kTypeKey = 'type';
 const String _kLabelKey = 'label';
@@ -38,12 +41,17 @@ class SystemTray {
   bool _updateInProgress = false;
 
   // Show a SystemTray icon
-  Future<bool> initSystemTray(String title, {String? iconPath}) async {
+  Future<bool> initSystemTray(
+    String title, {
+    String? iconPath,
+    String? toolTip,
+  }) async {
     bool value = await _platformChannel.invokeMethod(
       _kInitSystemTray,
       <String, dynamic>{
-        "title": title,
-        "iconpath": iconPath ?? "",
+        _kTitleKey: title,
+        _kIconPathKey: iconPath ?? "",
+        _kToolTipKey: toolTip ?? "",
       },
     );
     return value;

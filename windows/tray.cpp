@@ -38,11 +38,12 @@ SystemTray::~SystemTray() {
 
 bool SystemTray::init_system_tray(HWND window,
                                   const std::string& title,
-                                  const std::string& iconPath) {
+                                  const std::string& iconPath,
+                                  const std::string& toolTip) {
   bool ret = false;
 
   do {
-    tray_icon_installed_ = install_tray_icon(window, title, iconPath);
+    tray_icon_installed_ = install_tray_icon(window, title, iconPath, toolTip);
 
     ret = tray_icon_installed_;
   } while (false);
@@ -58,7 +59,8 @@ bool SystemTray::set_context_menu(HMENU context_menu) {
 
 bool SystemTray::install_tray_icon(HWND window,
                                    const std::string& title,
-                                   const std::string& iconPath) {
+                                   const std::string& iconPath,
+                                   const std::string& toolTip) {
   bool ret = false;
 
   do {
@@ -66,6 +68,7 @@ bool SystemTray::install_tray_icon(HWND window,
 
     std::wstring title_u = Utf16FromUtf8(title);
     std::wstring iconPath_u = Utf16FromUtf8(iconPath);
+    std::wstring toolTip_u = Utf16FromUtf8(toolTip);
 
     icon_ = static_cast<HICON>(LoadImage(
         nullptr, iconPath_u.c_str(), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
@@ -80,7 +83,7 @@ bool SystemTray::install_tray_icon(HWND window,
     nid_.hWnd = window_;
     nid_.hIcon = icon_;
     nid_.uCallbackMessage = tray_notify_callback_message_;
-    StringCchCopy(nid_.szTip, _countof(nid_.szTip), title_u.c_str());
+    StringCchCopy(nid_.szTip, _countof(nid_.szTip), toolTip_u.c_str());
     nid_.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 
     if (!Shell_NotifyIcon(NIM_ADD, &nid_)) {

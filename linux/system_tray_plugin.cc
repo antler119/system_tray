@@ -19,6 +19,7 @@ const static char kMenuItemSelectedCallbackMethod[] =
 
 const static char kTitleKey[] = "title";
 const static char kIconPathKey[] = "iconpath";
+const static char kToolTipKey[] = "tooltip";
 const static char kIdKey[] = "id";
 const static char kTypeKey[] = "type";
 const static char kLabelKey[] = "label";
@@ -69,6 +70,7 @@ static FlMethodResponse* init_system_tray(SystemTrayPlugin* self,
 
     const gchar* title = nullptr;
     const gchar* icon_path = nullptr;
+    const gchar* tool_tip = nullptr;
 
     FlValue* title_value = fl_value_lookup_string(args, kTitleKey);
     if (title_value && fl_value_get_type(title_value) == FL_VALUE_TYPE_STRING) {
@@ -89,8 +91,18 @@ static FlMethodResponse* init_system_tray(SystemTrayPlugin* self,
       break;
     }
 
+    FlValue* tooltip_value = fl_value_lookup_string(args, kToolTipKey);
+    if (tooltip_value &&
+        fl_value_get_type(tooltip_value) == FL_VALUE_TYPE_STRING) {
+      tool_tip = fl_value_get_string(tooltip_value);
+    }
+
+    if (!tool_tip) {
+      break;
+    }
+
     result = fl_value_new_bool(
-        self->system_tray->init_system_tray(title, icon_path));
+        self->system_tray->init_system_tray(title, icon_path, tool_tip));
 
   } while (false);
 

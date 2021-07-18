@@ -4,7 +4,8 @@
 #include <gtk/gtk.h>
 #include <libappindicator/app-indicator.h>
 
-typedef AppIndicator* (*app_indicator_new_fun)(const gchar*, const gchar*,
+typedef AppIndicator* (*app_indicator_new_fun)(const gchar*,
+                                               const gchar*,
                                                AppIndicatorCategory);
 typedef void (*app_indicator_set_status_fun)(AppIndicator*, AppIndicatorStatus);
 typedef void (*app_indicator_set_attention_icon_full_fun)(AppIndicator*,
@@ -14,12 +15,16 @@ typedef void (*app_indicator_set_menu_fun)(AppIndicator*, GtkMenu*);
 
 class SystemTray {
  public:
-  bool init_system_tray(const char* title, const char* iconPath);
+  bool init_system_tray(const char* title,
+                        const char* iconPath,
+                        const char* toolTip);
   bool set_context_menu(GtkWidget* system_menu);
 
  protected:
   bool init_indicator_api();
-  bool create_indicator(const char* title, const char* iconPath);
+  bool create_indicator(const char* title,
+                        const char* iconPath,
+                        const char* toolTip);
 
  protected:
   app_indicator_new_fun _app_indicator_new = nullptr;

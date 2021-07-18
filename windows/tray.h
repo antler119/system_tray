@@ -15,7 +15,8 @@ class SystemTray {
 
   bool init_system_tray(HWND window,
                         const std::string& title,
-                        const std::string& iconPath);
+                        const std::string& iconPath,
+                        const std::string& toolTip);
   bool set_context_menu(HMENU context_menu);
 
   std::optional<LRESULT> HandleWindowProc(HWND hwnd,
@@ -26,7 +27,8 @@ class SystemTray {
  protected:
   bool install_tray_icon(HWND window,
                          const std::string& title,
-                         const std::string& iconPath);
+                         const std::string& iconPath,
+                         const std::string& toolTip);
   bool remove_tray_icon();
   bool reinstall_tray_icon();
   void destroy_icon();

@@ -29,6 +29,7 @@ const static char kMenuItemSelectedCallbackMethod[] =
 
 const static char kTitleKey[] = "title";
 const static char kIconPathKey[] = "iconpath";
+const static char kToolTipKey[] = "tooltip";
 const static char kIdKey[] = "id";
 const static char kTypeKey[] = "type";
 const static char kLabelKey[] = "label";
@@ -206,7 +207,15 @@ void SystemTrayPlugin::init_system_tray(
       break;
     }
 
-    if (!system_tray_->init_system_tray(window, *title, *iconPath)) {
+    const std::string* toolTip =
+        std::get_if<std::string>(ValueOrNull(*map, kToolTipKey));
+    if (!toolTip) {
+      result.Error(kBadArgumentsError, "Unable to get tooltip",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    if (!system_tray_->init_system_tray(window, *title, *iconPath, *toolTip)) {
       result.Error(kBadArgumentsError, "Unable to init system tray",
                    flutter::EncodableValue(false));
       break;
