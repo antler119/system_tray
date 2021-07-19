@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
       path = p.joinAll([
         p.dirname(Platform.resolvedExecutable),
         'data/flutter_assets/assets',
-        'icon.ico'
+        'app_icon.ico'
       ]);
     } else if (Platform.isMacOS) {
       path = p.joinAll(['AppIcon']);
@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> {
       path = p.joinAll([
         p.dirname(Platform.resolvedExecutable),
         'data/flutter_assets/assets',
-        'icon.png'
+        'app_icon.png'
       ]);
     }
 
