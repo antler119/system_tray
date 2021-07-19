@@ -58,6 +58,7 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
 
     let label = item[kLabelKey] as? String ?? ""
     let id = item[kIdKey] as? Int ?? -1
+    let isEnabled = item[kEnabledKey] as? Bool ?? false
 
     switch type! {
       case kSeparatorKey:
@@ -69,16 +70,13 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
         let menuItem = NSMenuItem()
         menuItem.title = label
         menuItem.submenu = subMenu
-        menuItem.target = self
-        menuItem.action = #selector(onMenuItemSelectedCallback)
-        menuItem.tag = id
         menu.addItem(menuItem)
       }
       default:
       let menuItem = NSMenuItem()
       menuItem.title = label
       menuItem.target = self
-      menuItem.action = #selector(onMenuItemSelectedCallback)
+      menuItem.action = isEnabled ? #selector(onMenuItemSelectedCallback) : nil
       menuItem.tag = id
       menu.addItem(menuItem)
     }

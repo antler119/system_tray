@@ -104,9 +104,7 @@ class SystemTray {
         if (handler != null) {
           representation[_kIdKey] = _storeMenuCallback(handler);
         }
-        if (!item.enabled) {
-          representation[_kEnabledKey] = false;
-        }
+        representation[_kEnabledKey] = item.enabled;
       } else {
         throw ArgumentError(
             'Unknown MenuItemBase type: $item (${item.runtimeType})');

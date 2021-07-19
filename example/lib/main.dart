@@ -48,11 +48,7 @@ class _MyAppState extends State<MyApp> {
         'icon.ico'
       ]);
     } else if (Platform.isMacOS) {
-      path = p.joinAll([
-        p.dirname(Platform.resolvedExecutable),
-        '../Framework/App.framework/Resources/flutter_assets/assets',
-        'icon.png'
-      ]);
+      path = p.joinAll(['AppIcon']);
     } else {
       path = p.joinAll([
         p.dirname(Platform.resolvedExecutable),
@@ -76,7 +72,13 @@ class _MyAppState extends State<MyApp> {
         SubMenu(
           label: "SubMenu",
           children: [
-            MenuItem(label: 'SubItem1'),
+            MenuItem(
+              label: 'SubItem1',
+              enabled: false,
+              onClicked: () {
+                print("click SubItem1");
+              },
+            ),
             MenuItem(label: 'SubItem2'),
             MenuItem(label: 'SubItem3'),
           ],
