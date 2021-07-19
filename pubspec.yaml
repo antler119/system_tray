@@ -1,5 +1,5 @@
 name: system_tray
-description: Windows implementation of the system_tray plugin.
+description: system_tray that makes it easy to customize tray and work with your Flutter desktop app window **on Windows, macOS and Linux**. 
 version: 0.0.1
 repository: https://github.com/antler119/system_tray.git
 
