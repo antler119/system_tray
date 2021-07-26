@@ -3,6 +3,7 @@ import FlutterMacOS
 
 let kChannelName = "flutter/system_tray"
 let kInitSystemTray = "InitSystemTray";
+let kSetSystemTrayInfo = "SetSystemTrayInfo";
 let kSetContextMenu = "SetContextMenu";
 let kMenuItemSelectedCallbackMethod = "MenuItemSelectedCallback";
 
@@ -35,6 +36,8 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
     switch call.method {
     case kInitSystemTray:
       init_system_tray(call, result)
+    case kSetSystemTrayInfo:
+      set_system_tray_info(call, result)
     case kSetContextMenu:
       set_context_menu(call, result)
     default:
@@ -49,6 +52,15 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
       let toolTip = arguments[kToolTipKey] as! String
       result(system_tray?.init_system_tray(title: title, iconPath: iconPath, toolTip: toolTip) ?? false)
   }
+
+  func set_system_tray_info(_ call: FlutterMethodCall, _ result: FlutterResult) {
+      let arguments = call.arguments as! [String: Any]
+      let title = arguments[kTitleKey] as? String
+      let iconPath = arguments[kIconPathKey] as? String
+      let toolTip = arguments[kToolTipKey] as? String
+      result(system_tray?.set_system_tray_info(title: title, iconPath: iconPath, toolTip: toolTip) ?? false)
+  }
+
 
   func value_to_menu_item(menu: NSMenu, item: [String: Any]) -> Bool {
     let type = item[kTypeKey] as? String
