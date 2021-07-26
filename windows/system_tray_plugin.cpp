@@ -23,6 +23,7 @@ const static char kMenuConstructionError[] = "Menu Construction Error";
 const static char kChannelName[] = "flutter/system_tray";
 
 const static char kInitSystemTray[] = "InitSystemTray";
+const static char kSetSystemTrayInfo[] = "SetSystemTrayInfo";
 const static char kSetContextMenu[] = "SetContextMenu";
 const static char kMenuItemSelectedCallbackMethod[] =
     "MenuItemSelectedCallback";
@@ -98,6 +99,10 @@ class SystemTrayPlugin : public flutter::Plugin {
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
 
+  void set_system_tray_info(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call,
+      flutter::MethodResult<flutter::EncodableValue>& result);
+
   void set_context_menu(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
@@ -163,6 +168,8 @@ void SystemTrayPlugin::HandleMethodCall(
 
   if (method_call.method_name().compare(kInitSystemTray) == 0) {
     init_system_tray(method_call, *result);
+  } else if (method_call.method_name().compare(kSetSystemTrayInfo) == 0) {
+    set_system_tray_info(method_call, *result);
   } else if (method_call.method_name().compare(kSetContextMenu) == 0) {
     set_context_menu(method_call, *result);
   } else {
@@ -217,6 +224,38 @@ void SystemTrayPlugin::init_system_tray(
 
     if (!system_tray_->init_system_tray(window, *title, *iconPath, *toolTip)) {
       result.Error(kBadArgumentsError, "Unable to init system tray",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    result.Success(flutter::EncodableValue(true));
+
+  } while (false);
+}
+
+void SystemTrayPlugin::set_system_tray_info(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    const auto* map =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!map) {
+      result.Error(kBadArgumentsError, "Expected map",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const std::string* title =
+        std::get_if<std::string>(ValueOrNull(*map, kTitleKey));
+
+    const std::string* iconPath =
+        std::get_if<std::string>(ValueOrNull(*map, kIconPathKey));
+
+    const std::string* toolTip =
+        std::get_if<std::string>(ValueOrNull(*map, kToolTipKey));
+
+    if (!system_tray_->set_system_tray_info(title, iconPath, toolTip)) {
+      result.Error(kBadArgumentsError, "Unable to set system tray info",
                    flutter::EncodableValue(false));
       break;
     }

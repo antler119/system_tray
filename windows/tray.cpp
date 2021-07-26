@@ -51,6 +51,48 @@ bool SystemTray::init_system_tray(HWND window,
   return ret;
 }
 
+bool SystemTray::set_system_tray_info(const std::string* title,
+                                      const std::string* iconPath,
+                                      const std::string* toolTip) {
+  bool ret = false;
+
+  do {
+    if (!IsWindow(window_)) {
+      break;
+    }
+
+    if (!tray_icon_installed_) {
+      break;
+    }
+
+    if (toolTip) {
+      nid_.uFlags |= NIF_TIP;
+      std::wstring toolTip_u = Utf16FromUtf8(*toolTip);
+      StringCchCopy(nid_.szTip, _countof(nid_.szTip), toolTip_u.c_str());
+    }
+
+    if (iconPath) {
+      destroy_icon();
+
+      nid_.uFlags |= NIF_ICON;
+      std::wstring iconPath_u = Utf16FromUtf8(*iconPath);
+      icon_ = static_cast<HICON>(
+          LoadImage(nullptr, iconPath_u.c_str(), IMAGE_ICON,
+                    GetSystemMetrics(SM_CXSMICON),
+                    GetSystemMetrics(SM_CYSMICON), LR_LOADFROMFILE));
+      nid_.hIcon = icon_;
+    }
+
+    if (!Shell_NotifyIcon(NIM_MODIFY, &nid_)) {
+      break;
+    }
+
+    ret = true;
+  } while (false);
+
+  return ret;
+}
+
 bool SystemTray::set_context_menu(HMENU context_menu) {
   destroy_menu();
   context_menu_ = context_menu;

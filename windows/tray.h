@@ -17,6 +17,11 @@ class SystemTray {
                         const std::string& title,
                         const std::string& iconPath,
                         const std::string& toolTip);
+
+  bool set_system_tray_info(const std::string* title,
+                            const std::string* iconPath,
+                            const std::string* toolTip);
+
   bool set_context_menu(HMENU context_menu);
 
   std::optional<LRESULT> HandleWindowProc(HWND hwnd,

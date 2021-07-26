@@ -7,6 +7,7 @@ import 'menu_item.dart';
 const String _kChannelName = "flutter/system_tray";
 
 const String _kInitSystemTray = "InitSystemTray";
+const String _kSetSystemTrayInfo = "SetSystemTrayInfo";
 const String _kSetContextMenu = "SetContextMenu";
 const String _kMenuItemSelectedCallbackMethod = 'MenuItemSelectedCallback';
 
@@ -52,6 +53,22 @@ class SystemTray {
         _kTitleKey: title,
         _kIconPathKey: iconPath ?? "",
         _kToolTipKey: toolTip ?? "",
+      },
+    );
+    return value;
+  }
+
+  Future<bool> setSystemTrayInfo({
+    String? title,
+    String? iconPath,
+    String? toolTip,
+  }) async {
+    bool value = await _platformChannel.invokeMethod(
+      _kSetSystemTrayInfo,
+      <String, dynamic>{
+        _kTitleKey: title,
+        _kIconPathKey: iconPath,
+        _kToolTipKey: toolTip,
       },
     );
     return value;
