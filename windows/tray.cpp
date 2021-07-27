@@ -108,9 +108,9 @@ bool SystemTray::install_tray_icon(HWND window,
   do {
     destroy_icon();
 
-    std::wstring title_u = title ? Utf16FromUtf8(title) : L"";
-    std::wstring iconPath_u = iconPath ? Utf16FromUtf8(iconPath) : L"";
-    std::wstring toolTip_u = toolTip ? Utf16FromUtf8(toolTip) : L"";
+    std::wstring title_u = title ? Utf16FromUtf8(*title) : L"";
+    std::wstring iconPath_u = iconPath ? Utf16FromUtf8(*iconPath) : L"";
+    std::wstring toolTip_u = toolTip ? Utf16FromUtf8(*toolTip) : L"";
 
     icon_ = static_cast<HICON>(LoadImage(
         nullptr, iconPath_u.c_str(), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),

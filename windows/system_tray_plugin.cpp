@@ -164,7 +164,7 @@ SystemTrayPlugin::~SystemTrayPlugin() {
 void SystemTrayPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  printf("method call %s\n", method_call.method_name().c_str());
+  // printf("method call %s\n", method_call.method_name().c_str());
 
   if (method_call.method_name().compare(kInitSystemTray) == 0) {
     init_system_tray(method_call, *result);
@@ -207,7 +207,7 @@ void SystemTrayPlugin::init_system_tray(
     const std::string* toolTip =
         std::get_if<std::string>(ValueOrNull(*map, kToolTipKey));
 
-    if (!system_tray_->init_system_tray(window, *title, *iconPath, *toolTip)) {
+    if (!system_tray_->init_system_tray(window, title, iconPath, toolTip)) {
       result.Error(kBadArgumentsError, "Unable to init system tray",
                    flutter::EncodableValue(false));
       break;
