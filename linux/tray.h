@@ -18,6 +18,11 @@ class SystemTray {
   bool init_system_tray(const char* title,
                         const char* iconPath,
                         const char* toolTip);
+
+  bool set_system_tray_info(const char* title,
+                            const char* iconPath,
+                            const char* toolTip);
+
   bool set_context_menu(GtkWidget* system_menu);
 
  protected:

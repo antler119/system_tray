@@ -33,6 +33,35 @@ bool SystemTray::init_system_tray(const char* title,
   return ret;
 }
 
+bool SystemTray::set_system_tray_info(const char* title,
+                                      const char* iconPath,
+                                      const char* toolTip) {
+  printf("SystemTray::set_system_tray_info\n");
+
+  bool ret = false;
+
+  do {
+    if (!_app_indicator) {
+      break;
+    }
+
+    // if (iconPath) {
+    //   _app_indicator_set_status(_app_indicator, APP_INDICATOR_STATUS_ACTIVE);
+    //   app_indicator_set_icon_full(_app_indicator, iconPath, "icon");
+    // } else {
+    //   _app_indicator_set_status(_app_indicator,
+    //   APP_INDICATOR_STATUS_PASSIVE);
+    //   // app_indicator_set_icon_full(_app_indicator, "", "icon");
+    // }
+
+    // app_indicator_set_title(_app_indicator, "title");
+    // app_indicator_set_label(_app_indicator, "label", "guide");
+    ret = true;
+  } while (false);
+
+  return ret;
+}
+
 bool SystemTray::init_indicator_api() {
   bool ret = false;
 
@@ -72,9 +101,8 @@ bool SystemTray::create_indicator(const char* title,
   bool ret = false;
 
   do {
-    _app_indicator =
-        _app_indicator_new(title, iconPath ? iconPath : "indicator-messages",
-                           APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
+    _app_indicator = _app_indicator_new(
+        title, iconPath, APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
     _app_indicator_set_status(_app_indicator, APP_INDICATOR_STATUS_ACTIVE);
 
     ret = true;
@@ -84,6 +112,8 @@ bool SystemTray::create_indicator(const char* title,
 }
 
 bool SystemTray::set_context_menu(GtkWidget* system_menu) {
+  printf("SystemTray::set_context_menu\n");
+
   bool ret = false;
 
   do {
@@ -91,8 +121,6 @@ bool SystemTray::set_context_menu(GtkWidget* system_menu) {
     if (!_app_indicator) {
       break;
     }
-
-    gtk_widget_show_all(system_menu);
     app_indicator_set_menu(_app_indicator, GTK_MENU(system_menu));
 
     ret = true;

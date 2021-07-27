@@ -13,6 +13,7 @@ const static char kBadArgumentsError[] = "Bad Arguments";
 const static char kChannelName[] = "flutter/system_tray";
 
 const static char kInitSystemTray[] = "InitSystemTray";
+const static char kSetSystemTrayInfo[] = "SetSystemTrayInfo";
 const static char kSetContextMenu[] = "SetContextMenu";
 const static char kMenuItemSelectedCallbackMethod[] =
     "MenuItemSelectedCallback";
@@ -113,6 +114,51 @@ static FlMethodResponse* init_system_tray(SystemTrayPlugin* self,
   return response;
 }
 
+static FlMethodResponse* set_system_tray_info(SystemTrayPlugin* self,
+                                              FlValue* args) {
+  g_autoptr(FlValue) result = fl_value_new_bool(FALSE);
+  FlMethodResponse* response = nullptr;
+
+  do {
+    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
+      response = FL_METHOD_RESPONSE(
+          fl_method_error_response_new(kBadArgumentsError, "not map", nullptr));
+      break;
+    }
+
+    const gchar* title = nullptr;
+    const gchar* icon_path = nullptr;
+    const gchar* tool_tip = nullptr;
+
+    FlValue* title_value = fl_value_lookup_string(args, kTitleKey);
+    if (title_value && fl_value_get_type(title_value) == FL_VALUE_TYPE_STRING) {
+      title = fl_value_get_string(title_value);
+    }
+
+    FlValue* icon_path_value = fl_value_lookup_string(args, kIconPathKey);
+    if (icon_path_value &&
+        fl_value_get_type(icon_path_value) == FL_VALUE_TYPE_STRING) {
+      icon_path = fl_value_get_string(icon_path_value);
+    }
+
+    FlValue* tooltip_value = fl_value_lookup_string(args, kToolTipKey);
+    if (tooltip_value &&
+        fl_value_get_type(tooltip_value) == FL_VALUE_TYPE_STRING) {
+      tool_tip = fl_value_get_string(tooltip_value);
+    }
+
+    result = fl_value_new_bool(
+        self->system_tray->set_system_tray_info(title, icon_path, tool_tip));
+
+  } while (false);
+
+  if (nullptr == response) {
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
+
+  return response;
+}
+
 static GtkWidget* value_to_menu(SystemTrayPlugin* self, FlValue* value);
 
 static GtkWidget* value_to_menu_item(SystemTrayPlugin* self, FlValue* value) {
@@ -134,8 +180,7 @@ static GtkWidget* value_to_menu_item(SystemTrayPlugin* self, FlValue* value) {
 
   if (strcmp(type, kSeparatorKey) == 0) {
     menuItem = gtk_separator_menu_item_new();
-  }
-  else if (strcmp(type, kSubMenuKey) == 0) {
+  } else if (strcmp(type, kSubMenuKey) == 0) {
     FlValue* label_value = fl_value_lookup_string(value, kLabelKey);
     if (label_value != nullptr &&
         fl_value_get_type(label_value) == FL_VALUE_TYPE_STRING) {
@@ -149,31 +194,31 @@ static GtkWidget* value_to_menu_item(SystemTrayPlugin* self, FlValue* value) {
       }
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuItem), subMenu);
     }
-  }
-  else {
+  } else {
     FlValue* label_value = fl_value_lookup_string(value, kLabelKey);
     if (label_value != nullptr &&
         fl_value_get_type(label_value) == FL_VALUE_TYPE_STRING) {
-      g_print("value_to_menu_item label:%s\n", fl_value_get_string(label_value));
+      g_print("value_to_menu_item label:%s\n",
+              fl_value_get_string(label_value));
       menuItem = gtk_menu_item_new_with_label(fl_value_get_string(label_value));
 
       FlValue* enabled_value = fl_value_lookup_string(value, kEnabledKey);
       if (enabled_value != nullptr &&
           fl_value_get_type(enabled_value) == FL_VALUE_TYPE_BOOL) {
-        gtk_widget_set_sensitive(menuItem,
-                                fl_value_get_bool(enabled_value) ? TRUE : FALSE);
+        gtk_widget_set_sensitive(
+            menuItem, fl_value_get_bool(enabled_value) ? TRUE : FALSE);
       }
 
       FlValue* id_value = fl_value_lookup_string(value, kIdKey);
       if (id_value != nullptr &&
           fl_value_get_type(id_value) == FL_VALUE_TYPE_INT) {
         g_signal_connect(G_OBJECT(menuItem), "activate",
-                        G_CALLBACK(tray_callback),
-                        GINT_TO_POINTER(fl_value_get_int(id_value)));
+                         G_CALLBACK(tray_callback),
+                         GINT_TO_POINTER(fl_value_get_int(id_value)));
       }
     }
   }
-  
+
   return menuItem;
 }
 
@@ -235,6 +280,8 @@ static void system_tray_plugin_handle_method_call(SystemTrayPlugin* self,
 
   if (strcmp(method, kInitSystemTray) == 0) {
     response = init_system_tray(self, args);
+  } else if (strcmp(method, kSetSystemTrayInfo) == 0) {
+    response = set_system_tray_info(self, args);
   } else if (strcmp(method, kSetContextMenu) == 0) {
     response = set_context_menu(self, args);
   } else {
