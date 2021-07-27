@@ -8,6 +8,9 @@ typedef AppIndicator* (*app_indicator_new_fun)(const gchar*,
                                                const gchar*,
                                                AppIndicatorCategory);
 typedef void (*app_indicator_set_status_fun)(AppIndicator*, AppIndicatorStatus);
+typedef void (*app_indicator_set_icon_full_func)(AppIndicator* self,
+                                                 const gchar* icon_name,
+                                                 const gchar* icon_desc);
 typedef void (*app_indicator_set_attention_icon_full_fun)(AppIndicator*,
                                                           const gchar*,
                                                           const gchar*);
@@ -34,6 +37,7 @@ class SystemTray {
  protected:
   app_indicator_new_fun _app_indicator_new = nullptr;
   app_indicator_set_status_fun _app_indicator_set_status = nullptr;
+  app_indicator_set_icon_full_func _app_indicator_set_icon_full = nullptr;
   app_indicator_set_attention_icon_full_fun
       _app_indicator_set_attention_icon_full = nullptr;
   app_indicator_set_menu_fun _app_indicator_set_menu = nullptr;

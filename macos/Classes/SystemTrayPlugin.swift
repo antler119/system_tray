@@ -47,9 +47,9 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
 
   func init_system_tray(_ call: FlutterMethodCall, _ result: FlutterResult) {
       let arguments = call.arguments as! [String: Any]
-      let title = arguments[kTitleKey] as! String
-      let iconPath = arguments[kIconPathKey] as! String
-      let toolTip = arguments[kToolTipKey] as! String
+      let title = arguments[kTitleKey] as? String
+      let iconPath = arguments[kIconPathKey] as? String
+      let toolTip = arguments[kToolTipKey] as? String
       result(system_tray?.init_system_tray(title: title, iconPath: iconPath, toolTip: toolTip) ?? false)
   }
 

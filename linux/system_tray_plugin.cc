@@ -78,28 +78,16 @@ static FlMethodResponse* init_system_tray(SystemTrayPlugin* self,
       title = fl_value_get_string(title_value);
     }
 
-    if (!title) {
-      break;
-    }
-
     FlValue* icon_path_value = fl_value_lookup_string(args, kIconPathKey);
     if (icon_path_value &&
         fl_value_get_type(icon_path_value) == FL_VALUE_TYPE_STRING) {
       icon_path = fl_value_get_string(icon_path_value);
     }
 
-    if (!icon_path) {
-      break;
-    }
-
     FlValue* tooltip_value = fl_value_lookup_string(args, kToolTipKey);
     if (tooltip_value &&
         fl_value_get_type(tooltip_value) == FL_VALUE_TYPE_STRING) {
       tool_tip = fl_value_get_string(tooltip_value);
-    }
-
-    if (!tool_tip) {
-      break;
     }
 
     result = fl_value_new_bool(
@@ -176,7 +164,7 @@ static GtkWidget* value_to_menu_item(SystemTrayPlugin* self, FlValue* value) {
 
   const gchar* type = fl_value_get_string(type_value);
 
-  g_print("value_to_menu_item type:%s\n", type);
+  // g_print("value_to_menu_item type:%s\n", type);
 
   if (strcmp(type, kSeparatorKey) == 0) {
     menuItem = gtk_separator_menu_item_new();
@@ -184,8 +172,8 @@ static GtkWidget* value_to_menu_item(SystemTrayPlugin* self, FlValue* value) {
     FlValue* label_value = fl_value_lookup_string(value, kLabelKey);
     if (label_value != nullptr &&
         fl_value_get_type(label_value) == FL_VALUE_TYPE_STRING) {
-      g_print("value_to_menu_item submenu label:%s\n",
-              fl_value_get_string(label_value));
+      // g_print("value_to_menu_item submenu label:%s\n",
+      //         fl_value_get_string(label_value));
       menuItem = gtk_menu_item_new_with_label(fl_value_get_string(label_value));
       GtkWidget* subMenu =
           value_to_menu(self, fl_value_lookup_string(value, kSubMenuKey));
@@ -198,8 +186,8 @@ static GtkWidget* value_to_menu_item(SystemTrayPlugin* self, FlValue* value) {
     FlValue* label_value = fl_value_lookup_string(value, kLabelKey);
     if (label_value != nullptr &&
         fl_value_get_type(label_value) == FL_VALUE_TYPE_STRING) {
-      g_print("value_to_menu_item label:%s\n",
-              fl_value_get_string(label_value));
+      // g_print("value_to_menu_item label:%s\n",
+      //         fl_value_get_string(label_value));
       menuItem = gtk_menu_item_new_with_label(fl_value_get_string(label_value));
 
       FlValue* enabled_value = fl_value_lookup_string(value, kEnabledKey);
@@ -223,8 +211,6 @@ static GtkWidget* value_to_menu_item(SystemTrayPlugin* self, FlValue* value) {
 }
 
 static GtkWidget* value_to_menu(SystemTrayPlugin* self, FlValue* value) {
-  g_print("value_to_menu\n");
-
   if (fl_value_get_type(value) != FL_VALUE_TYPE_LIST) {
     return nullptr;
   }
@@ -276,7 +262,7 @@ static void system_tray_plugin_handle_method_call(SystemTrayPlugin* self,
   const gchar* method = fl_method_call_get_name(method_call);
   FlValue* args = fl_method_call_get_args(method_call);
 
-  g_print("method call %s\n", method);
+  // g_print("method call %s\n", method);
 
   if (strcmp(method, kInitSystemTray) == 0) {
     response = init_system_tray(self, args);

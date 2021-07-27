@@ -37,9 +37,9 @@ SystemTray::~SystemTray() {
 }
 
 bool SystemTray::init_system_tray(HWND window,
-                                  const std::string& title,
-                                  const std::string& iconPath,
-                                  const std::string& toolTip) {
+                                  const std::string* title,
+                                  const std::string* iconPath,
+                                  const std::string* toolTip) {
   bool ret = false;
 
   do {
@@ -100,17 +100,17 @@ bool SystemTray::set_context_menu(HMENU context_menu) {
 }
 
 bool SystemTray::install_tray_icon(HWND window,
-                                   const std::string& title,
-                                   const std::string& iconPath,
-                                   const std::string& toolTip) {
+                                   const std::string* title,
+                                   const std::string* iconPath,
+                                   const std::string* toolTip) {
   bool ret = false;
 
   do {
     destroy_icon();
 
-    std::wstring title_u = Utf16FromUtf8(title);
-    std::wstring iconPath_u = Utf16FromUtf8(iconPath);
-    std::wstring toolTip_u = Utf16FromUtf8(toolTip);
+    std::wstring title_u = title ? Utf16FromUtf8(title) : L"";
+    std::wstring iconPath_u = iconPath ? Utf16FromUtf8(iconPath) : L"";
+    std::wstring toolTip_u = toolTip ? Utf16FromUtf8(toolTip) : L"";
 
     icon_ = static_cast<HICON>(LoadImage(
         nullptr, iconPath_u.c_str(), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),

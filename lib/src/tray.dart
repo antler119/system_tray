@@ -51,8 +51,8 @@ class SystemTray {
       _kInitSystemTray,
       <String, dynamic>{
         _kTitleKey: title,
-        _kIconPathKey: iconPath ?? "",
-        _kToolTipKey: toolTip ?? "",
+        _kIconPathKey: iconPath,
+        _kToolTipKey: toolTip,
       },
     );
     return value;

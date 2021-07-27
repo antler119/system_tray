@@ -1,3 +1,7 @@
+## 0.0.3
+
+* Add function setSystemTrayInfo
+
 ## 0.0.2
 
 * Upgrade README.md

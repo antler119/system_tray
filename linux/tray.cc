@@ -11,6 +11,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <string>
+
 bool SystemTray::init_system_tray(const char* title,
                                   const char* iconPath,
                                   const char* toolTip) {
@@ -36,7 +38,9 @@ bool SystemTray::init_system_tray(const char* title,
 bool SystemTray::set_system_tray_info(const char* title,
                                       const char* iconPath,
                                       const char* toolTip) {
-  printf("SystemTray::set_system_tray_info\n");
+  // printf(
+  //     "SystemTray::set_system_tray_info title: %s, iconPath: %s, toolTip:
+  //     %s\n", title, iconPath, toolTip);
 
   bool ret = false;
 
@@ -45,14 +49,15 @@ bool SystemTray::set_system_tray_info(const char* title,
       break;
     }
 
-    // if (iconPath) {
-    //   _app_indicator_set_status(_app_indicator, APP_INDICATOR_STATUS_ACTIVE);
-    //   app_indicator_set_icon_full(_app_indicator, iconPath, "icon");
-    // } else {
-    //   _app_indicator_set_status(_app_indicator,
-    //   APP_INDICATOR_STATUS_PASSIVE);
-    //   // app_indicator_set_icon_full(_app_indicator, "", "icon");
-    // }
+    if (iconPath) {
+      std::string path = iconPath;
+      if (!path.empty()) {
+        _app_indicator_set_status(_app_indicator, APP_INDICATOR_STATUS_ACTIVE);
+        _app_indicator_set_icon_full(_app_indicator, iconPath, "icon");
+      } else {
+        _app_indicator_set_status(_app_indicator, APP_INDICATOR_STATUS_PASSIVE);
+      }
+    }
 
     // app_indicator_set_title(_app_indicator, "title");
     // app_indicator_set_label(_app_indicator, "label", "guide");
@@ -75,6 +80,9 @@ bool SystemTray::init_indicator_api() {
         dlsym(handle, "app_indicator_new"));
     _app_indicator_set_status = reinterpret_cast<app_indicator_set_status_fun>(
         dlsym(handle, "app_indicator_set_status"));
+    _app_indicator_set_icon_full =
+        reinterpret_cast<app_indicator_set_icon_full_func>(
+            dlsym(handle, "app_indicator_set_icon_full"));
     _app_indicator_set_attention_icon_full =
         reinterpret_cast<app_indicator_set_attention_icon_full_fun>(
             dlsym(handle, "app_indicator_set_attention_icon_full"));
@@ -82,6 +90,7 @@ bool SystemTray::init_indicator_api() {
         dlsym(handle, "app_indicator_set_menu"));
 
     if (!_app_indicator_new || !_app_indicator_set_status ||
+        !_app_indicator_set_icon_full ||
         !_app_indicator_set_attention_icon_full || !_app_indicator_set_menu) {
       break;
     }
@@ -112,7 +121,7 @@ bool SystemTray::create_indicator(const char* title,
 }
 
 bool SystemTray::set_context_menu(GtkWidget* system_menu) {
-  printf("SystemTray::set_context_menu\n");
+  printf("SystemTray::set_context_menu system_menu:%p\n", system_menu);
 
   bool ret = false;
 
@@ -121,11 +130,12 @@ bool SystemTray::set_context_menu(GtkWidget* system_menu) {
     if (!_app_indicator) {
       break;
     }
-    app_indicator_set_menu(_app_indicator, GTK_MENU(system_menu));
+
+    gtk_widget_show_all(system_menu);
+    _app_indicator_set_menu(_app_indicator, GTK_MENU(system_menu));
 
     ret = true;
   } while (false);
-
   return ret;
 }
 

@@ -200,27 +200,12 @@ void SystemTrayPlugin::init_system_tray(
 
     const std::string* title =
         std::get_if<std::string>(ValueOrNull(*map, kTitleKey));
-    if (!title) {
-      result.Error(kBadArgumentsError, "Unable to get title",
-                   flutter::EncodableValue(false));
-      break;
-    }
 
     const std::string* iconPath =
         std::get_if<std::string>(ValueOrNull(*map, kIconPathKey));
-    if (!iconPath) {
-      result.Error(kBadArgumentsError, "Unable to get icon path",
-                   flutter::EncodableValue(false));
-      break;
-    }
 
     const std::string* toolTip =
         std::get_if<std::string>(ValueOrNull(*map, kToolTipKey));
-    if (!toolTip) {
-      result.Error(kBadArgumentsError, "Unable to get tooltip",
-                   flutter::EncodableValue(false));
-      break;
-    }
 
     if (!system_tray_->init_system_tray(window, *title, *iconPath, *toolTip)) {
       result.Error(kBadArgumentsError, "Unable to init system tray",

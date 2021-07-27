@@ -40,6 +40,7 @@ Future<void> initSystemTray() async {
     // We first init the systray menu and then add the menu entries
     await _systemTray.initSystemTray("system tray",
         iconPath: path, toolTip: "How to use system tray with Flutter");
+
     await _systemTray.setContextMenu(
       [
         MenuItem(
@@ -72,6 +73,16 @@ Future<void> initSystemTray() async {
         ),
       ],
     );
+
+    // flash tray icon
+    _timer = Timer.periodic(
+      const Duration(milliseconds: 500),
+      (timer) {
+        _toogleTrayIcon = !_toogleTrayIcon;
+        _systemTray.setSystemTrayInfo(
+          iconPath: _toogleTrayIcon ? "" : path,
+        );
+      },
+    );
   }
-}
 ```

@@ -14,9 +14,9 @@ class SystemTray {
   ~SystemTray();
 
   bool init_system_tray(HWND window,
-                        const std::string& title,
-                        const std::string& iconPath,
-                        const std::string& toolTip);
+                        const std::string* title,
+                        const std::string* iconPath,
+                        const std::string* toolTip);
 
   bool set_system_tray_info(const std::string* title,
                             const std::string* iconPath,
@@ -31,9 +31,9 @@ class SystemTray {
 
  protected:
   bool install_tray_icon(HWND window,
-                         const std::string& title,
-                         const std::string& iconPath,
-                         const std::string& toolTip);
+                         const std::string* title,
+                         const std::string* iconPath,
+                         const std::string* toolTip);
   bool remove_tray_icon();
   bool reinstall_tray_icon();
   void destroy_icon();
