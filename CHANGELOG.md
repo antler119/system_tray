@@ -1,3 +1,7 @@
+## 0.0.6
+
+* Fixed flash tray icon for macos
+
 ## 0.0.4
 
 * Fixed flash tray icon for macos
