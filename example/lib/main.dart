@@ -112,6 +112,11 @@ class _MyAppState extends State<MyApp> {
         );
       },
     );
+
+    // handle system tray event
+    _systemTray.registerSystemTrayEventHandler((eventName) {
+      print("eventName: $eventName");
+    });
   }
 
   @override

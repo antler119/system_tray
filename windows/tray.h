@@ -10,7 +10,13 @@
 
 class SystemTray {
  public:
-  SystemTray();
+  class Delegate {
+   public:
+    virtual void OnSystemTrayEventCallback(const std::string& eventName) = 0;
+  };
+
+ public:
+  SystemTray(Delegate* delegate);
   ~SystemTray();
 
   bool init_system_tray(HWND window,
@@ -56,6 +62,8 @@ class SystemTray {
       RegisterWindowMessage(L"SystemTrayNotify");
   NOTIFYICONDATA nid_ = {sizeof(NOTIFYICONDATA)};
   bool tray_icon_installed_ = false;
+
+  Delegate* delegate_ = nullptr;
 };
 
 #endif

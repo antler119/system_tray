@@ -27,6 +27,7 @@ const static char kSetSystemTrayInfo[] = "SetSystemTrayInfo";
 const static char kSetContextMenu[] = "SetContextMenu";
 const static char kMenuItemSelectedCallbackMethod[] =
     "MenuItemSelectedCallback";
+const static char kSystemTrayEventCallbackMethod[] = "SystemTrayEventCallback";
 
 const static char kTitleKey[] = "title";
 const static char kIconPathKey[] = "iconpath";
@@ -73,7 +74,7 @@ const flutter::EncodableValue* ValueOrNull(const flutter::EncodableMap& map,
   return &(it->second);
 }
 
-class SystemTrayPlugin : public flutter::Plugin {
+class SystemTrayPlugin : public flutter::Plugin, public SystemTray::Delegate {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
 
@@ -81,6 +82,9 @@ class SystemTrayPlugin : public flutter::Plugin {
                    std::unique_ptr<flutter::MethodChannel<>> channel);
 
   virtual ~SystemTrayPlugin();
+
+ protected:
+  virtual void OnSystemTrayEventCallback(const std::string& eventName);
 
  private:
   // Called when a method is called on this plugin's channel from Dart.
@@ -154,7 +158,7 @@ SystemTrayPlugin::SystemTrayPlugin(
         return HandleWindowProc(hwnd, message, wparam, lparam);
       });
 
-  system_tray_ = std::make_unique<SystemTray>();
+  system_tray_ = std::make_unique<SystemTray>(this);
 }
 
 SystemTrayPlugin::~SystemTrayPlugin() {
@@ -366,6 +370,11 @@ std::optional<LRESULT> SystemTrayPlugin::HandleWindowProc(HWND hwnd,
     }
   }
   return std::nullopt;
+}
+
+void SystemTrayPlugin::OnSystemTrayEventCallback(const std::string& eventName) {
+  channel_->InvokeMethod(kSystemTrayEventCallbackMethod,
+                         std::make_unique<flutter::EncodableValue>(eventName));
 }
 
 }  // namespace

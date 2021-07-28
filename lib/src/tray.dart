@@ -10,6 +10,7 @@ const String _kInitSystemTray = "InitSystemTray";
 const String _kSetSystemTrayInfo = "SetSystemTrayInfo";
 const String _kSetContextMenu = "SetContextMenu";
 const String _kMenuItemSelectedCallbackMethod = 'MenuItemSelectedCallback';
+const String _kSystemTrayEventCallbackMethod = 'SystemTrayEventCallback';
 
 const String _kTitleKey = "title";
 const String _kIconPathKey = "iconpath";
@@ -19,6 +20,9 @@ const String _kTypeKey = 'type';
 const String _kLabelKey = 'label';
 const String _kSubMenuKey = 'submenu';
 const String _kEnabledKey = 'enabled';
+
+/// A callback provided to [SystemTray] to handle system tray click event.
+typedef SystemTrayEventCallback = void Function(String eventName);
 
 class SystemTray {
   SystemTray() {
@@ -40,6 +44,9 @@ class SystemTray {
   /// after a new call to setMenu, so that clients don't received unexpected
   /// stale callbacks.
   bool _updateInProgress = false;
+
+  //
+  SystemTrayEventCallback? _systemTrayEventCallback;
 
   // Show a SystemTray icon
   Future<bool> initSystemTray(
@@ -72,6 +79,10 @@ class SystemTray {
       },
     );
     return value;
+  }
+
+  void registerSystemTrayEventHandler(SystemTrayEventCallback callback) {
+    _systemTrayEventCallback = callback;
   }
 
   /// Sets the native application menu to [menus].
@@ -178,6 +189,11 @@ class SystemTray {
         throw Exception('Unknown menu item ID $menuItemId');
       }
       callback();
+    } else if (methodCall.method == _kSystemTrayEventCallbackMethod) {
+      if (_systemTrayEventCallback != null) {
+        final String eventName = methodCall.arguments;
+        _systemTrayEventCallback!(eventName);
+      }
     }
   }
 }

@@ -5,6 +5,10 @@
 #include <strsafe.h>
 #include <windowsx.h>
 
+const static char kSystemTrayEventLButtnUp[] = "LButtonUp";
+const static char kSystemTrayEventLButtonDblClk[] = "LButtonDblClk";
+const static char kSystemTrayEventRButtnUp[] = "RButtonUp";
+
 // Converts the given UTF-8 string to UTF-16.
 static std::wstring Utf16FromUtf8(const std::string& utf8_string) {
   if (utf8_string.empty()) {
@@ -28,7 +32,7 @@ static std::wstring Utf16FromUtf8(const std::string& utf8_string) {
   return utf16_string;
 }
 
-SystemTray::SystemTray() {}
+SystemTray::SystemTray(Delegate* delegate) : delegate_(delegate) {}
 
 SystemTray::~SystemTray() {
   remove_tray_icon();
@@ -189,12 +193,19 @@ std::optional<LRESULT> SystemTray::OnTrayIconCallback(UINT id,
   do {
     switch (notifyMsg) {
       case WM_LBUTTONUP: {
-        ActiveWindow();
+        if (delegate_) {
+          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtnUp);
+        }
       } break;
       case WM_LBUTTONDBLCLK: {
-        ActiveWindow();
+        if (delegate_) {
+          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtonDblClk);
+        }
       } break;
       case WM_RBUTTONUP: {
+        if (delegate_) {
+          delegate_->OnSystemTrayEventCallback(kSystemTrayEventRButtnUp);
+        }
         ShowPopupMenu();
       } break;
     }
