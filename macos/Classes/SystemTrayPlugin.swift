@@ -28,7 +28,7 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
   }
 
   init(_ channel: FlutterMethodChannel) {
-    system_tray = SystemTray()
+    system_tray = SystemTray(channel)
     self.channel = channel
   }
 

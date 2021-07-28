@@ -5,9 +5,9 @@
 #include <strsafe.h>
 #include <windowsx.h>
 
-const static char kSystemTrayEventLButtnUp[] = "LButtonUp";
-const static char kSystemTrayEventLButtonDblClk[] = "LButtonDblClk";
-const static char kSystemTrayEventRButtnUp[] = "RButtonUp";
+const static char kSystemTrayEventLButtnUp[] = "leftMouseUp";
+const static char kSystemTrayEventLButtonDblClk[] = "leftMouseDblClk";
+const static char kSystemTrayEventRButtnUp[] = "rightMouseUp";
 
 // Converts the given UTF-8 string to UTF-16.
 static std::wstring Utf16FromUtf8(const std::string& utf8_string) {
