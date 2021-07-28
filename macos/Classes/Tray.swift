@@ -13,11 +13,14 @@ class SystemTray {
         if let title = title {
             statusItem?.button?.title = title
         }
-        if let itemImage = NSImage(named: iconPath) {
-            let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
-            itemImage.size = destSize
-            statusItem?.button?.image = itemImage
-        } 
+
+        if let iconPath = iconPath {
+            if let itemImage = NSImage(named: iconPath) {
+                let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
+                itemImage.size = destSize
+                statusItem?.button?.image = itemImage
+            } 
+        }
         return true
     }
 
