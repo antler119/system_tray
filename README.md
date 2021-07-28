@@ -2,6 +2,11 @@
 
 A [Flutter package](https://github.com/antler119/system_tray.git) that that enables support for system tray menu for desktop flutter apps. **on Windows, macOS and Linux**. 
 
+**Features**:
+
+    - Modify system tray title/icon/tooltip
+    - Handle system tray event leftMouseUp/rightMouseUp (only for macos、windows)
+
 # Getting Started
 
 Install the package using `pubspec.yaml`
@@ -84,5 +89,10 @@ Future<void> initSystemTray() async {
         );
       },
     );
+
+    // handle system tray event
+    _systemTray.registerSystemTrayEventHandler((eventName) {
+      print("eventName: $eventName");
+    });
   }
 ```

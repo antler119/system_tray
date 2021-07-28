@@ -1,3 +1,7 @@
+## 0.0.7
+
+* Support handle system tray event leftMouseUp/rightMouseUp (only for macos、windows)
+
 ## 0.0.6
 
 * Fixed flash tray icon for macos
