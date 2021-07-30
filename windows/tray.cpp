@@ -47,6 +47,11 @@ bool SystemTray::init_system_tray(HWND window,
   bool ret = false;
 
   do {
+    if (tray_icon_installed_) {
+      ret = true;
+      break;
+    }
+
     tray_icon_installed_ = install_tray_icon(window, title, iconPath, toolTip);
 
     ret = tray_icon_installed_;
