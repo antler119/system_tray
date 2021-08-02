@@ -9,6 +9,7 @@ set(PLUGIN_NAME "system_tray_plugin")
 add_library(${PLUGIN_NAME} SHARED
   "system_tray_plugin.cpp"
   "tray.cpp"
+  "app_window.cpp"
 )
 apply_standard_settings(${PLUGIN_NAME})
 set_target_properties(${PLUGIN_NAME} PROPERTIES

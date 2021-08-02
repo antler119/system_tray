@@ -32,6 +32,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final SystemTray _systemTray = SystemTray();
+  final AppWindow _appWindow = AppWindow();
+
   Timer? _timer;
   bool _toogleTrayIcon = true;
 
@@ -74,7 +76,42 @@ class _MyAppState extends State<MyApp> {
         MenuItem(
           label: 'Show',
           onClicked: () {
-            appWindow.show();
+            _appWindow.show();
+          },
+        ),
+        MenuItem(
+          label: 'Hide',
+          onClicked: () {
+            _appWindow.hide();
+          },
+        ),
+        MenuItem(
+          label: 'Start flash tray icon',
+          onClicked: () {
+            print("Start flash tray icon");
+
+            _timer ??= Timer.periodic(
+              const Duration(milliseconds: 500),
+              (timer) {
+                _toogleTrayIcon = !_toogleTrayIcon;
+                _systemTray.setSystemTrayInfo(
+                  iconPath: _toogleTrayIcon ? "" : path,
+                );
+              },
+            );
+          },
+        ),
+        MenuItem(
+          label: 'Stop flash tray icon',
+          onClicked: () {
+            print("Stop flash tray icon");
+
+            _timer?.cancel();
+            _timer = null;
+
+            _systemTray.setSystemTrayInfo(
+              iconPath: path,
+            );
           },
         ),
         MenuSeparator(),
@@ -88,34 +125,36 @@ class _MyAppState extends State<MyApp> {
                 print("click SubItem1");
               },
             ),
-            MenuItem(label: 'SubItem2'),
-            MenuItem(label: 'SubItem3'),
+            MenuItem(
+              label: 'SubItem2',
+              onClicked: () {
+                print("click SubItem2");
+              },
+            ),
+            MenuItem(
+              label: 'SubItem3',
+              onClicked: () {
+                print("click SubItem3");
+              },
+            ),
           ],
         ),
         MenuSeparator(),
         MenuItem(
           label: 'Exit',
           onClicked: () {
-            appWindow.close();
+            _appWindow.close();
           },
         ),
       ],
     );
 
-    // flash tray icon
-    _timer = Timer.periodic(
-      const Duration(milliseconds: 500),
-      (timer) {
-        _toogleTrayIcon = !_toogleTrayIcon;
-        _systemTray.setSystemTrayInfo(
-          iconPath: _toogleTrayIcon ? "" : path,
-        );
-      },
-    );
-
     // handle system tray event
     _systemTray.registerSystemTrayEventHandler((eventName) {
       print("eventName: $eventName");
+      if (eventName == "leftMouseUp") {
+        _appWindow.show();
+      }
     });
   }
 

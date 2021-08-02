@@ -13,11 +13,13 @@
 #include <memory>
 #include <sstream>
 
+#include "app_window.h"
 #include "tray.h"
 
 namespace {
 
 const static char kBadArgumentsError[] = "Bad Arguments";
+const static char kOutOfMemoryError[] = "Out of memory";
 const static char kMenuConstructionError[] = "Menu Construction Error";
 
 const static char kChannelName[] = "flutter/system_tray";
@@ -38,6 +40,13 @@ const static char kLabelKey[] = "label";
 const static char kSeparatorKey[] = "separator";
 const static char kSubMenuKey[] = "submenu";
 const static char kEnabledKey[] = "enabled";
+
+const static char kChannelAppWindowName[] = "flutter/system_tray/app_window";
+
+const static char kInitAppWindow[] = "InitAppWindow";
+const static char kShowAppWindow[] = "ShowAppWindow";
+const static char kHideAppWindow[] = "HideAppWindow";
+const static char kCloseAppWindow[] = "CloseAppWindow";
 
 // Starting point for the generated menu IDs.
 const unsigned int kFirstMenuId = 1000;
@@ -78,8 +87,10 @@ class SystemTrayPlugin : public flutter::Plugin, public SystemTray::Delegate {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
 
-  SystemTrayPlugin(flutter::PluginRegistrarWindows* registrar,
-                   std::unique_ptr<flutter::MethodChannel<>> channel);
+  SystemTrayPlugin(
+      flutter::PluginRegistrarWindows* registrar,
+      std::unique_ptr<flutter::MethodChannel<>> channel,
+      std::unique_ptr<flutter::MethodChannel<>> channel_app_window);
 
   virtual ~SystemTrayPlugin();
 
@@ -99,21 +110,36 @@ class SystemTrayPlugin : public flutter::Plugin, public SystemTray::Delegate {
                                           WPARAM wparam,
                                           LPARAM lparam);
 
-  void init_system_tray(
+  void initSystemTray(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
 
-  void set_system_tray_info(
+  void setSystemTrayInfo(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
 
-  void set_context_menu(
+  void setContextMenu(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
 
-  bool value_to_menu(HMENU menu, const flutter::EncodableList& representation);
-  bool value_to_menu_item(HMENU menu,
-                          const flutter::EncodableMap& representation);
+  bool valueToMenu(HMENU menu, const flutter::EncodableList& representation);
+  bool valueToMenuItem(HMENU menu, const flutter::EncodableMap& representation);
+
+  void initAppWindow(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call,
+      flutter::MethodResult<flutter::EncodableValue>& result);
+
+  void showAppWindow(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call,
+      flutter::MethodResult<flutter::EncodableValue>& result);
+
+  void hideAppWindow(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call,
+      flutter::MethodResult<flutter::EncodableValue>& result);
+
+  void closeAppWindow(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call,
+      flutter::MethodResult<flutter::EncodableValue>& result);
 
  protected:
   // The registrar for this plugin.
@@ -122,10 +148,15 @@ class SystemTrayPlugin : public flutter::Plugin, public SystemTray::Delegate {
   // The cannel to send menu item activations on.
   std::unique_ptr<flutter::MethodChannel<>> channel_;
 
+  // The cannel to application window.
+  std::unique_ptr<flutter::MethodChannel<>> channel_app_window_;
+
   // The ID of the registered WindowProc handler.
   int window_proc_id_;
 
   std::unique_ptr<SystemTray> system_tray_;
+
+  std::unique_ptr<AppWindow> app_window_;
 };
 
 // static
@@ -138,10 +169,22 @@ void SystemTrayPlugin::RegisterWithRegistrar(
 
   auto* channel_pointer = channel.get();
 
-  auto plugin =
-      std::make_unique<SystemTrayPlugin>(registrar, std::move(channel));
+  auto channel_app_window =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          registrar->messenger(), kChannelAppWindowName,
+          &flutter::StandardMethodCodec::GetInstance());
+
+  auto* channel_app_window_pointer = channel_app_window.get();
+
+  auto plugin = std::make_unique<SystemTrayPlugin>(
+      registrar, std::move(channel), std::move(channel_app_window));
 
   channel_pointer->SetMethodCallHandler(
+      [plugin_pointer = plugin.get()](const auto& call, auto result) {
+        plugin_pointer->HandleMethodCall(call, std::move(result));
+      });
+
+  channel_app_window_pointer->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto& call, auto result) {
         plugin_pointer->HandleMethodCall(call, std::move(result));
       });
@@ -151,8 +194,11 @@ void SystemTrayPlugin::RegisterWithRegistrar(
 
 SystemTrayPlugin::SystemTrayPlugin(
     flutter::PluginRegistrarWindows* registrar,
-    std::unique_ptr<flutter::MethodChannel<>> channel)
-    : registrar_(registrar), channel_(std::move(channel)) {
+    std::unique_ptr<flutter::MethodChannel<>> channel,
+    std::unique_ptr<flutter::MethodChannel<>> channel_app_window)
+    : registrar_(registrar),
+      channel_(std::move(channel)),
+      channel_app_window_(std::move(channel_app_window)) {
   window_proc_id_ = registrar_->RegisterTopLevelWindowProcDelegate(
       [this](HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
         return HandleWindowProc(hwnd, message, wparam, lparam);
@@ -168,20 +214,28 @@ SystemTrayPlugin::~SystemTrayPlugin() {
 void SystemTrayPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  // printf("method call %s\n", method_call.method_name().c_str());
+  printf("method call %s\n", method_call.method_name().c_str());
 
   if (method_call.method_name().compare(kInitSystemTray) == 0) {
-    init_system_tray(method_call, *result);
+    initSystemTray(method_call, *result);
   } else if (method_call.method_name().compare(kSetSystemTrayInfo) == 0) {
-    set_system_tray_info(method_call, *result);
+    setSystemTrayInfo(method_call, *result);
   } else if (method_call.method_name().compare(kSetContextMenu) == 0) {
-    set_context_menu(method_call, *result);
+    setContextMenu(method_call, *result);
+  } else if (method_call.method_name().compare(kInitAppWindow) == 0) {
+    initAppWindow(method_call, *result);
+  } else if (method_call.method_name().compare(kShowAppWindow) == 0) {
+    showAppWindow(method_call, *result);
+  } else if (method_call.method_name().compare(kHideAppWindow) == 0) {
+    hideAppWindow(method_call, *result);
+  } else if (method_call.method_name().compare(kCloseAppWindow) == 0) {
+    closeAppWindow(method_call, *result);
   } else {
     result->NotImplemented();
   }
 }
 
-void SystemTrayPlugin::init_system_tray(
+void SystemTrayPlugin::initSystemTray(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     flutter::MethodResult<flutter::EncodableValue>& result) {
   do {
@@ -211,7 +265,7 @@ void SystemTrayPlugin::init_system_tray(
     const std::string* toolTip =
         std::get_if<std::string>(ValueOrNull(*map, kToolTipKey));
 
-    if (!system_tray_->init_system_tray(window, title, iconPath, toolTip)) {
+    if (!system_tray_->initSystemTray(window, title, iconPath, toolTip)) {
       result.Error(kBadArgumentsError, "Unable to init system tray",
                    flutter::EncodableValue(false));
       break;
@@ -222,7 +276,7 @@ void SystemTrayPlugin::init_system_tray(
   } while (false);
 }
 
-void SystemTrayPlugin::set_system_tray_info(
+void SystemTrayPlugin::setSystemTrayInfo(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     flutter::MethodResult<flutter::EncodableValue>& result) {
   do {
@@ -243,7 +297,7 @@ void SystemTrayPlugin::set_system_tray_info(
     const std::string* toolTip =
         std::get_if<std::string>(ValueOrNull(*map, kToolTipKey));
 
-    if (!system_tray_->set_system_tray_info(title, iconPath, toolTip)) {
+    if (!system_tray_->setSystemTrayInfo(title, iconPath, toolTip)) {
       result.Error(kBadArgumentsError, "Unable to set system tray info",
                    flutter::EncodableValue(false));
       break;
@@ -254,18 +308,18 @@ void SystemTrayPlugin::set_system_tray_info(
   } while (false);
 }
 
-bool SystemTrayPlugin::value_to_menu(
+bool SystemTrayPlugin::valueToMenu(
     HMENU menu,
     const flutter::EncodableList& representation) {
   for (const auto& item : representation) {
-    if (!value_to_menu_item(menu, std::get<flutter::EncodableMap>(item))) {
+    if (!valueToMenuItem(menu, std::get<flutter::EncodableMap>(item))) {
       return false;
     }
   }
   return true;
 }
 
-bool SystemTrayPlugin::value_to_menu_item(
+bool SystemTrayPlugin::valueToMenuItem(
     HMENU menu,
     const flutter::EncodableMap& representation) {
   const auto* type =
@@ -296,7 +350,7 @@ bool SystemTrayPlugin::value_to_menu_item(
           ValueOrNull(representation, kSubMenuKey));
       if (children) {
         HMENU submenu = ::CreatePopupMenu();
-        if (value_to_menu(submenu, *children)) {
+        if (valueToMenu(submenu, *children)) {
           item_id = reinterpret_cast<UINT_PTR>(submenu);
         } else {
           DestroyMenu(submenu);
@@ -314,7 +368,7 @@ bool SystemTrayPlugin::value_to_menu_item(
   return true;
 }
 
-void SystemTrayPlugin::set_context_menu(
+void SystemTrayPlugin::setContextMenu(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     flutter::MethodResult<flutter::EncodableValue>& result) {
   HMENU popup_menu = nullptr;
@@ -329,13 +383,13 @@ void SystemTrayPlugin::set_context_menu(
     }
 
     popup_menu = CreatePopupMenu();
-    if (!value_to_menu(popup_menu, *list)) {
+    if (!valueToMenu(popup_menu, *list)) {
       result.Error(kBadArgumentsError, "Unable to contruct menu",
                    flutter::EncodableValue(false));
       break;
     }
 
-    if (!system_tray_->set_context_menu(popup_menu)) {
+    if (!system_tray_->setContextMenu(popup_menu)) {
       result.Error(kBadArgumentsError, "Unable to set context menu",
                    flutter::EncodableValue(false));
       break;
@@ -375,6 +429,90 @@ std::optional<LRESULT> SystemTrayPlugin::HandleWindowProc(HWND hwnd,
 void SystemTrayPlugin::OnSystemTrayEventCallback(const std::string& eventName) {
   channel_->InvokeMethod(kSystemTrayEventCallbackMethod,
                          std::make_unique<flutter::EncodableValue>(eventName));
+}
+
+void SystemTrayPlugin::initAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    if (app_window_) {
+      result.Success(flutter::EncodableValue(true));
+      break;
+    }
+
+    flutter::FlutterView* view = registrar_->GetView();
+    HWND flutter_window = view->GetNativeWindow();
+    HWND window = view ? GetAncestor(flutter_window, GA_ROOT) : nullptr;
+    if (!view) {
+      result.Error(kBadArgumentsError, "Expected window",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    app_window_ = std::make_unique<AppWindow>();
+    if (!app_window_) {
+      result.Error(kOutOfMemoryError, "Out of memory",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    if (!app_window_->initAppWindow(window, flutter_window)) {
+      result.Error(kBadArgumentsError, "Unable to init appwindow",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    result.Success(flutter::EncodableValue(true));
+
+  } while (false);
+}
+
+void SystemTrayPlugin::showAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    if (!app_window_) {
+      result.Error(kBadArgumentsError, "Expected app window",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    app_window_->showAppWindow(true);
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
+}
+
+void SystemTrayPlugin::hideAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    if (!app_window_) {
+      result.Error(kBadArgumentsError, "Expected app window",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    app_window_->showAppWindow(false);
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
+}
+
+void SystemTrayPlugin::closeAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    if (!app_window_) {
+      result.Error(kBadArgumentsError, "Expected app window",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    app_window_->closeAppWindow();
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
 }
 
 }  // namespace

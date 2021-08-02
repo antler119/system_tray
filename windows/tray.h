@@ -19,16 +19,16 @@ class SystemTray {
   SystemTray(Delegate* delegate);
   ~SystemTray();
 
-  bool init_system_tray(HWND window,
-                        const std::string* title,
-                        const std::string* iconPath,
-                        const std::string* toolTip);
+  bool initSystemTray(HWND window,
+                      const std::string* title,
+                      const std::string* iconPath,
+                      const std::string* toolTip);
 
-  bool set_system_tray_info(const std::string* title,
-                            const std::string* iconPath,
-                            const std::string* toolTip);
+  bool setSystemTrayInfo(const std::string* title,
+                         const std::string* iconPath,
+                         const std::string* toolTip);
 
-  bool set_context_menu(HMENU context_menu);
+  bool setContextMenu(HMENU context_menu);
 
   std::optional<LRESULT> HandleWindowProc(HWND hwnd,
                                           UINT message,
@@ -36,21 +36,20 @@ class SystemTray {
                                           LPARAM lparam);
 
  protected:
-  bool install_tray_icon(HWND window,
-                         const std::string* title,
-                         const std::string* iconPath,
-                         const std::string* toolTip);
-  bool remove_tray_icon();
-  bool reinstall_tray_icon();
-  void destroy_icon();
-  void destroy_menu();
+  bool installTrayIcon(HWND window,
+                       const std::string* title,
+                       const std::string* iconPath,
+                       const std::string* toolTip);
+  bool removeTrayIcon();
+  bool reinstallTrayIcon();
+  void destroyIcon();
+  void destroyMenu();
 
   std::optional<LRESULT> OnTrayIconCallback(UINT id,
                                             UINT notifyMsg,
                                             const POINT& pt);
 
   void ShowPopupMenu();
-  void ActiveWindow();
 
  protected:
   HWND window_ = nullptr;

@@ -35,15 +35,15 @@ static std::wstring Utf16FromUtf8(const std::string& utf8_string) {
 SystemTray::SystemTray(Delegate* delegate) : delegate_(delegate) {}
 
 SystemTray::~SystemTray() {
-  remove_tray_icon();
-  destroy_icon();
-  destroy_menu();
+  removeTrayIcon();
+  destroyIcon();
+  destroyMenu();
 }
 
-bool SystemTray::init_system_tray(HWND window,
-                                  const std::string* title,
-                                  const std::string* iconPath,
-                                  const std::string* toolTip) {
+bool SystemTray::initSystemTray(HWND window,
+                                const std::string* title,
+                                const std::string* iconPath,
+                                const std::string* toolTip) {
   bool ret = false;
 
   do {
@@ -52,7 +52,7 @@ bool SystemTray::init_system_tray(HWND window,
       break;
     }
 
-    tray_icon_installed_ = install_tray_icon(window, title, iconPath, toolTip);
+    tray_icon_installed_ = installTrayIcon(window, title, iconPath, toolTip);
 
     ret = tray_icon_installed_;
   } while (false);
@@ -60,9 +60,9 @@ bool SystemTray::init_system_tray(HWND window,
   return ret;
 }
 
-bool SystemTray::set_system_tray_info(const std::string* title,
-                                      const std::string* iconPath,
-                                      const std::string* toolTip) {
+bool SystemTray::setSystemTrayInfo(const std::string* title,
+                                   const std::string* iconPath,
+                                   const std::string* toolTip) {
   bool ret = false;
 
   do {
@@ -81,7 +81,7 @@ bool SystemTray::set_system_tray_info(const std::string* title,
     }
 
     if (iconPath) {
-      destroy_icon();
+      destroyIcon();
 
       nid_.uFlags |= NIF_ICON;
       std::wstring iconPath_u = Utf16FromUtf8(*iconPath);
@@ -102,20 +102,20 @@ bool SystemTray::set_system_tray_info(const std::string* title,
   return ret;
 }
 
-bool SystemTray::set_context_menu(HMENU context_menu) {
-  destroy_menu();
+bool SystemTray::setContextMenu(HMENU context_menu) {
+  destroyMenu();
   context_menu_ = context_menu;
   return true;
 }
 
-bool SystemTray::install_tray_icon(HWND window,
-                                   const std::string* title,
-                                   const std::string* iconPath,
-                                   const std::string* toolTip) {
+bool SystemTray::installTrayIcon(HWND window,
+                                 const std::string* title,
+                                 const std::string* iconPath,
+                                 const std::string* toolTip) {
   bool ret = false;
 
   do {
-    destroy_icon();
+    destroyIcon();
 
     std::wstring title_u = title ? Utf16FromUtf8(*title) : L"";
     std::wstring iconPath_u = iconPath ? Utf16FromUtf8(*iconPath) : L"";
@@ -147,14 +147,14 @@ bool SystemTray::install_tray_icon(HWND window,
   return ret;
 }
 
-bool SystemTray::remove_tray_icon() {
+bool SystemTray::removeTrayIcon() {
   if (tray_icon_installed_) {
     return Shell_NotifyIcon(NIM_DELETE, &nid_);
   }
   return false;
 }
 
-bool SystemTray::reinstall_tray_icon() {
+bool SystemTray::reinstallTrayIcon() {
   if (tray_icon_installed_) {
     tray_icon_installed_ = Shell_NotifyIcon(NIM_ADD, &nid_);
     return tray_icon_installed_;
@@ -162,14 +162,14 @@ bool SystemTray::reinstall_tray_icon() {
   return false;
 }
 
-void SystemTray::destroy_icon() {
+void SystemTray::destroyIcon() {
   if (icon_) {
     DestroyIcon(icon_);
     icon_ = nullptr;
   }
 }
 
-void SystemTray::destroy_menu() {
+void SystemTray::destroyMenu() {
   if (context_menu_) {
     DestroyMenu(context_menu_);
     context_menu_ = nullptr;
@@ -181,7 +181,7 @@ std::optional<LRESULT> SystemTray::HandleWindowProc(HWND hwnd,
                                                     WPARAM wparam,
                                                     LPARAM lparam) {
   if (message == taskbar_created_message_) {
-    reinstall_tray_icon();
+    reinstallTrayIcon();
     return 0;
   } else if (message == tray_notify_callback_message_) {
     UINT id = HIWORD(lparam);
@@ -231,19 +231,4 @@ void SystemTray::ShowPopupMenu() {
   TrackPopupMenu(context_menu_, TPM_LEFTBUTTON, pt.x, pt.y, 0, window_,
                  nullptr);
   PostMessage(window_, WM_NULL, 0, 0);
-}
-
-void SystemTray::ActiveWindow() {
-  if (!IsWindow(window_))
-    return;
-
-  if (!::IsWindowVisible(window_))
-    ShowWindow(window_, SW_SHOW);
-
-  if (IsIconic(window_)) {
-    SendMessage(window_, WM_SYSCOMMAND, SC_RESTORE | HTCAPTION, 0);
-  }
-
-  BringWindowToTop(window_);
-  SetForegroundWindow(window_);
 }
