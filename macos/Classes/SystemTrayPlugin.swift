@@ -2,6 +2,7 @@ import Cocoa
 import FlutterMacOS
 
 let kChannelName = "flutter/system_tray"
+
 let kInitSystemTray = "InitSystemTray";
 let kSetSystemTrayInfo = "SetSystemTrayInfo";
 let kSetContextMenu = "SetContextMenu";
@@ -17,52 +18,76 @@ let kSeparatorKey = "separator";
 let kSubMenuKey = "submenu";
 let kEnabledKey = "enabled";
 
+let kChannelAppWindowName = "flutter/system_tray/app_window"
+let kInitAppWindow = "InitAppWindow";
+let kShowAppWindow = "ShowAppWindow";
+let kHideAppWindow = "HideAppWindow";
+let kCloseAppWindow = "CloseAppWindow";
+
 public class SystemTrayPlugin: NSObject, FlutterPlugin {
   var system_tray: SystemTray?
+  var app_window: AppWindow?
   var channel: FlutterMethodChannel
+  var channel_app_window: FlutterMethodChannel
+  var registrar: FlutterPluginRegistrar
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: kChannelName, binaryMessenger: registrar.messenger)
-    let instance = SystemTrayPlugin(channel)
+    let channel_app_window = FlutterMethodChannel(name: kChannelAppWindowName, binaryMessenger: registrar.messenger)
+
+    let instance = SystemTrayPlugin(registrar, channel, channel_app_window)
+    
     registrar.addMethodCallDelegate(instance, channel: channel)
+    registrar.addMethodCallDelegate(instance, channel: channel_app_window)
   }
 
-  init(_ channel: FlutterMethodChannel) {
+  init(_ registrar: FlutterPluginRegistrar, _ channel: FlutterMethodChannel, _ channel_app_window: FlutterMethodChannel) {
     system_tray = SystemTray(channel)
     self.channel = channel
+    self.channel_app_window = channel_app_window
+    self.registrar = registrar
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    print("method: \(call.method)")
+
     switch call.method {
     case kInitSystemTray:
-      init_system_tray(call, result)
+      initSystemTray(call, result)
     case kSetSystemTrayInfo:
-      set_system_tray_info(call, result)
+      setSystemTrayInfo(call, result)
     case kSetContextMenu:
-      set_context_menu(call, result)
+      setContextMenu(call, result)
+    case kInitAppWindow:
+      initAppWindow(call, result)
+    case kShowAppWindow:
+      showAppWindow(call, result)
+    case kHideAppWindow:
+      hideAppWindow(call, result)
+    case kCloseAppWindow:
+      closeAppWindow(call, result)
     default:
       result(FlutterMethodNotImplemented)
     }
   }
 
-  func init_system_tray(_ call: FlutterMethodCall, _ result: FlutterResult) {
+  func initSystemTray(_ call: FlutterMethodCall, _ result: FlutterResult) {
       let arguments = call.arguments as! [String: Any]
       let title = arguments[kTitleKey] as? String
       let iconPath = arguments[kIconPathKey] as? String
       let toolTip = arguments[kToolTipKey] as? String
-      result(system_tray?.init_system_tray(title: title, iconPath: iconPath, toolTip: toolTip) ?? false)
+      result(system_tray?.initSystemTray(title: title, iconPath: iconPath, toolTip: toolTip) ?? false)
   }
 
-  func set_system_tray_info(_ call: FlutterMethodCall, _ result: FlutterResult) {
+  func setSystemTrayInfo(_ call: FlutterMethodCall, _ result: FlutterResult) {
       let arguments = call.arguments as! [String: Any]
       let title = arguments[kTitleKey] as? String
       let iconPath = arguments[kIconPathKey] as? String
       let toolTip = arguments[kToolTipKey] as? String
-      result(system_tray?.set_system_tray_info(title: title, iconPath: iconPath, toolTip: toolTip) ?? false)
+      result(system_tray?.setSystemTrayInfo(title: title, iconPath: iconPath, toolTip: toolTip) ?? false)
   }
 
-
-  func value_to_menu_item(menu: NSMenu, item: [String: Any]) -> Bool {
+  func valueToMenuItem(menu: NSMenu, item: [String: Any]) -> Bool {
     let type = item[kTypeKey] as? String
     if type == nil {
       return false
@@ -78,7 +103,7 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
       case kSubMenuKey:
       let subMenu = NSMenu()
       let children = item[kSubMenuKey] as? [[String: Any]] ?? [[String: Any]]()
-      if value_to_menu(menu: subMenu, items: children) {
+      if valueToMenu(menu: subMenu, items: children) {
         let menuItem = NSMenuItem()
         menuItem.title = label
         menuItem.submenu = subMenu
@@ -96,16 +121,16 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
     return true
   }
 
-  func value_to_menu(menu: NSMenu, items: [[String: Any]]) -> Bool {
+  func valueToMenu(menu: NSMenu, items: [[String: Any]]) -> Bool {
       for item in items {
-        if !value_to_menu_item(menu: menu, item: item) {
+        if !valueToMenuItem(menu: menu, item: item) {
             return false
         }
       }
       return true
   }
 
-  func set_context_menu(_ call: FlutterMethodCall, _ result: FlutterResult) {
+  func setContextMenu(_ call: FlutterMethodCall, _ result: FlutterResult) {
       var popup_menu: NSMenu
       repeat {
         let items = call.arguments as? [[String: Any]]
@@ -114,11 +139,11 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
         }
 
         popup_menu = NSMenu()
-        if !value_to_menu(menu: popup_menu, items: items!) {
+        if !valueToMenu(menu: popup_menu, items: items!) {
           break
         }
  
-        result(system_tray?.set_context_menu(menu: popup_menu) ?? false)
+        result(system_tray?.setContextMenu(menu: popup_menu) ?? false)
         return
       } while false
 
@@ -127,6 +152,73 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
 
   @objc func onMenuItemSelectedCallback(_ sender:Any) {
     let menuItem = sender as! NSMenuItem
-    channel.invokeMethod(kMenuItemSelectedCallbackMethod, arguments: menuItem.tag)
+    channel.invokeMethod(kMenuItemSelectedCallbackMethod, arguments: menuItem.tag, result: nil)
+  }
+
+  func initAppWindow(_ call: FlutterMethodCall, _ result: FlutterResult) {
+      repeat {
+          if self.app_window != nil {
+            result(true)
+            break;
+          }
+
+          let view = registrar.view
+          if view == nil {
+            break
+          }
+
+          let window = view!.window;
+          if window == nil {
+            break
+          }
+
+          self.app_window = AppWindow(channel, window!)
+          result(true)
+          return
+      } while false
+
+      result(false)
+  }
+
+  func showAppWindow(_ call: FlutterMethodCall, _ result: FlutterResult) {
+      repeat {
+          if self.app_window == nil {
+            break;
+          }
+
+          self.app_window!.showAppWindow()
+          result(true)
+          return
+      } while false
+
+      result(false)
+  }
+
+  func hideAppWindow(_ call: FlutterMethodCall, _ result: FlutterResult) {
+      repeat {
+          if self.app_window == nil {
+            break;
+          }
+
+          self.app_window!.hideAppWindow()
+          result(true)
+          return
+      } while false
+
+      result(false)
+  }
+
+  func closeAppWindow(_ call: FlutterMethodCall, _ result: FlutterResult) {
+      repeat {
+          if self.app_window == nil {
+            break;
+          }
+
+          self.app_window!.closeAppWindow()
+          result(true)
+          return
+      } while false
+
+      result(false)
   }
 }

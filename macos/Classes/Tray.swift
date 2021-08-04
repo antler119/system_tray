@@ -23,7 +23,7 @@ class SystemTray : NSObject, NSMenuDelegate {
         self.statusItem?.menu = nil
     }
 
-    @objc func on_system_tray_event_callback(sender: NSStatusBarButton) {
+    @objc func onSystemTrayEventCallback(sender: NSStatusBarButton) {
         if let event = NSApp.currentEvent {
             switch event.type {
             case .leftMouseUp:
@@ -37,10 +37,10 @@ class SystemTray : NSObject, NSMenuDelegate {
         }
     }
 
-    func init_system_tray(title: String?, iconPath: String?, toolTip: String?) -> Bool {
+    func initSystemTray(title: String?, iconPath: String?, toolTip: String?) -> Bool {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
-        statusItem?.button?.action = #selector(on_system_tray_event_callback(sender:))
+        statusItem?.button?.action = #selector(onSystemTrayEventCallback(sender:))
         statusItem?.button?.target = self
         statusItem?.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
 
@@ -61,7 +61,7 @@ class SystemTray : NSObject, NSMenuDelegate {
         return true
     }
 
-    func set_system_tray_info(title: String?, iconPath: String?, toolTip: String?) -> Bool {
+    func setSystemTrayInfo(title: String?, iconPath: String?, toolTip: String?) -> Bool {
         if let toolTip = toolTip {
             statusItem?.button?.toolTip = toolTip
         }
@@ -81,7 +81,7 @@ class SystemTray : NSObject, NSMenuDelegate {
         return true
     }
 
-    func set_context_menu(menu: NSMenu) -> Bool {
+    func setContextMenu(menu: NSMenu) -> Bool {
         statusItemMenu = menu
         statusItemMenu?.delegate = self
         return true
