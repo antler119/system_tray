@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' show dirname, joinAll;
 
 import 'menu_item.dart';
 
@@ -49,16 +51,16 @@ class SystemTray {
   SystemTrayEventCallback? _systemTrayEventCallback;
 
   // Show a SystemTray icon
-  Future<bool> initSystemTray(
-    String title, {
-    String? iconPath,
+  Future<bool> initSystemTray({
+    required String title,
+    required String iconPath,
     String? toolTip,
   }) async {
     bool value = await _platformChannel.invokeMethod(
       _kInitSystemTray,
       <String, dynamic>{
         _kTitleKey: title,
-        _kIconPathKey: iconPath,
+        _kIconPathKey: _joinIconPath(iconPath),
         _kToolTipKey: toolTip,
       },
     );
@@ -74,7 +76,7 @@ class SystemTray {
       _kSetSystemTrayInfo,
       <String, dynamic>{
         _kTitleKey: title,
-        _kIconPathKey: iconPath,
+        _kIconPathKey: iconPath == null ? null : _joinIconPath(iconPath),
         _kToolTipKey: toolTip,
       },
     );
@@ -195,5 +197,17 @@ class SystemTray {
         _systemTrayEventCallback!(eventName);
       }
     }
+  }
+
+  String _joinIconPath(String assetPath) {
+    if (Platform.isMacOS) {
+      return joinAll(['AppIcon']);
+    }
+
+    return joinAll([
+      dirname(Platform.resolvedExecutable),
+      'data/flutter_assets',
+      assetPath,
+    ]);
   }
 }
