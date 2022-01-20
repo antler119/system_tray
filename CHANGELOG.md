@@ -1,3 +1,7 @@
+## 0.0.8
+
+* tray icon support high DPI on windows
+
 ## 0.0.7
 
 * Support handle system tray event leftMouseUp/rightMouseUp (only for macos、windows)

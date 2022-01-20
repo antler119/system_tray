@@ -85,10 +85,9 @@ bool SystemTray::setSystemTrayInfo(const std::string* title,
 
       nid_.uFlags |= NIF_ICON;
       std::wstring iconPath_u = Utf16FromUtf8(*iconPath);
-      icon_ = static_cast<HICON>(
-          LoadImage(nullptr, iconPath_u.c_str(), IMAGE_ICON,
-                    GetSystemMetrics(SM_CXSMICON),
-                    GetSystemMetrics(SM_CYSMICON), LR_LOADFROMFILE));
+      icon_ =
+          static_cast<HICON>(LoadImage(nullptr, iconPath_u.c_str(), IMAGE_ICON,
+                                       0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE));
       nid_.hIcon = icon_;
     }
 
@@ -121,9 +120,9 @@ bool SystemTray::installTrayIcon(HWND window,
     std::wstring iconPath_u = iconPath ? Utf16FromUtf8(*iconPath) : L"";
     std::wstring toolTip_u = toolTip ? Utf16FromUtf8(*toolTip) : L"";
 
-    icon_ = static_cast<HICON>(LoadImage(
-        nullptr, iconPath_u.c_str(), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
-        GetSystemMetrics(SM_CYSMICON), LR_LOADFROMFILE));
+    icon_ =
+        static_cast<HICON>(LoadImage(nullptr, iconPath_u.c_str(), IMAGE_ICON, 0,
+                                     0, LR_LOADFROMFILE | LR_DEFAULTSIZE));
     if (!icon_) {
       break;
     }

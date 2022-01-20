@@ -11,6 +11,20 @@ A [Flutter package](https://github.com/antler119/system_tray.git) that that enab
 
 Install the package using `pubspec.yaml`
 
+```yaml
+dependencies:
+  ...
+  system_tray: ^0.0.8
+```
+
+# Notes
+
+## Linux
+### Prerequisite
+```bash
+sudo apt-get install appindicator3-0.1 libappindicator3-dev
+```
+
 # For Windows
 
 <img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_windows.jpg">
