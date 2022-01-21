@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' show dirname, joinAll;
 
@@ -99,7 +100,7 @@ class SystemTray {
           _kSetContextMenu, _channelRepresentationForMenus(menus));
       _updateInProgress = false;
     } on PlatformException catch (e) {
-      print('Platform exception setting menu: ${e.message}');
+      debugPrint('Platform exception setting menu: ${e.message}');
     }
   }
 
@@ -182,7 +183,8 @@ class SystemTray {
         // TODO: Evaluate whether this works in practice, or if races are
         // regular occurences that clients will need to be prepared to
         // handle (in which case a more complex ID system will be needed).
-        print('Warning: Menu selection callback received during menu update.');
+        debugPrint(
+            'Warning: Menu selection callback received during menu update.');
         return;
       }
       final int menuItemId = methodCall.arguments;
