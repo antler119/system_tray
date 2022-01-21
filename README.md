@@ -1,15 +1,14 @@
 # system_tray
+[![Pub](https://img.shields.io/pub/v/system_tray.svg)](https://pub.dartlang.org/packages/system_tray)
 
 A [Flutter package](https://github.com/antler119/system_tray.git) that that enables support for system tray menu for desktop flutter apps. **on Windows, macOS and Linux**.
 
-**Features**:
+## Features
+* Modify system tray title/icon/tooltip
+* Handle system tray event leftMouseUp/rightMouseUp (only for macos、windows)
 
-    - Modify system tray title/icon/tooltip
-    - Handle system tray event leftMouseUp/rightMouseUp (only for macos、windows)
-
-# Getting Started
-
-Install the package using `pubspec.yaml`
+## Install
+In the pubspec.yaml of your flutter project, add the following dependency:
 
 ```yaml
 dependencies:
@@ -17,31 +16,35 @@ dependencies:
   system_tray: ^0.0.8
 ```
 
-# Notes
+In your library add the following import:
 
-## Linux
-### Prerequisite
+```dart
+import 'package:system_tray/system_tray.dart';
+```
+
+## Prerequisite
+
+### Linux
 ```bash
 sudo apt-get install appindicator3-0.1 libappindicator3-dev
 ```
 
-# For Windows
+## Example App
+### Windows
 
 <img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_windows.jpg">
 
-# For macOS
+### macOS
 
 <img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_macos.jpg">
 
-# For Linux
+### Linux
 
 <img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_ubuntu.jpg">
 
-## API
 
-Below we show how to use system_tray
-
-1. Smallest example
+## Usage:
+Smallest example:
 
 ```dart
 Future<void> initSystemTray() async {
@@ -62,7 +65,7 @@ Future<void> initSystemTray() async {
 }
 ```
 
-2. Icon flashing effect example
+Icon flashing effect example:
 
 ```dart
 Future<void> initSystemTray() async {
