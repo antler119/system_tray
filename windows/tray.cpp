@@ -4,6 +4,12 @@
 
 #include <strsafe.h>
 #include <windowsx.h>
+#include <winuser.h>
+
+namespace {
+constexpr const wchar_t kTrayWindowClassName[] =
+    L"FLUTTER_RUNNER_WIN32_WINDOW_TRAY";
+}
 
 const static char kSystemTrayEventLButtnUp[] = "leftMouseUp";
 const static char kSystemTrayEventLButtonDblClk[] = "leftMouseDblClk";
@@ -38,6 +44,8 @@ SystemTray::~SystemTray() {
   removeTrayIcon();
   destroyIcon();
   destroyMenu();
+  DestoryTrayWindow();
+  UnregisterWindowClass();
 }
 
 bool SystemTray::initSystemTray(HWND window,
@@ -50,6 +58,12 @@ bool SystemTray::initSystemTray(HWND window,
     if (tray_icon_installed_) {
       ret = true;
       break;
+    }
+
+    if (tray_window_ == nullptr) {
+      if (!CreateTrayWindow()) {
+        break;
+      }
     }
 
     tray_icon_installed_ = installTrayIcon(window, title, iconPath, toolTip);
@@ -226,8 +240,79 @@ void SystemTray::ShowPopupMenu() {
   POINT pt{};
   GetCursorPos(&pt);
 
-  SetForegroundWindow(window_);
+  SetForegroundWindow(tray_window_);
+
   TrackPopupMenu(context_menu_, TPM_LEFTBUTTON, pt.x, pt.y, 0, window_,
                  nullptr);
   PostMessage(window_, WM_NULL, 0, 0);
+}
+
+const wchar_t* SystemTray::GetTrayWindowClass() {
+  if (!tray_class_registered_) {
+    WNDCLASS window_class{};
+    window_class.hCursor = nullptr;
+    window_class.lpszClassName = kTrayWindowClassName;
+    window_class.style = CS_HREDRAW | CS_VREDRAW;
+    window_class.cbClsExtra = 0;
+    window_class.cbWndExtra = 0;
+    window_class.hInstance = GetModuleHandle(nullptr);
+    window_class.hIcon = nullptr;
+    window_class.hbrBackground = 0;
+    window_class.lpszMenuName = nullptr;
+    window_class.lpfnWndProc = SystemTray::TrayWndProc;
+    RegisterClass(&window_class);
+    tray_class_registered_ = true;
+  }
+
+  return kTrayWindowClassName;
+}
+
+void SystemTray::UnregisterWindowClass() {
+  UnregisterClass(kTrayWindowClassName, nullptr);
+  tray_class_registered_ = false;
+}
+
+LRESULT CALLBACK SystemTray::TrayWndProc(HWND const window,
+                                         UINT const message,
+                                         WPARAM const wparam,
+                                         LPARAM const lparam) noexcept {
+  if (message == WM_NCCREATE) {
+    auto window_struct = reinterpret_cast<CREATESTRUCT*>(lparam);
+    SetWindowLongPtr(window, GWLP_USERDATA,
+                     reinterpret_cast<LONG_PTR>(window_struct->lpCreateParams));
+  } else if (SystemTray* that = GetThisFromHandle(window)) {
+    return that->TrayMessageHandler(window, message, wparam, lparam);
+  }
+
+  return DefWindowProc(window, message, wparam, lparam);
+}
+
+SystemTray* SystemTray::GetThisFromHandle(HWND const window) noexcept {
+  return reinterpret_cast<SystemTray*>(GetWindowLongPtr(window, GWLP_USERDATA));
+}
+
+LRESULT SystemTray::TrayMessageHandler(HWND window,
+                                       UINT const message,
+                                       WPARAM const wparam,
+                                       LPARAM const lparam) noexcept {
+  return DefWindowProc(window, message, wparam, lparam);
+}
+
+bool SystemTray::CreateTrayWindow() {
+  HWND window =
+      CreateWindow(GetTrayWindowClass(), nullptr, WS_OVERLAPPEDWINDOW, -1, -1,
+                   0, 0, nullptr, nullptr, GetModuleHandle(nullptr), this);
+  if (!window) {
+    return false;
+  }
+
+  tray_window_ = window;
+  return true;
+}
+
+void SystemTray::DestoryTrayWindow() {
+  if (tray_window_) {
+    DestroyWindow(tray_window_);
+    tray_window_ = nullptr;
+  }
 }

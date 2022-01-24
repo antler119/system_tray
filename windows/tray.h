@@ -51,7 +51,27 @@ class SystemTray {
 
   void ShowPopupMenu();
 
+  const wchar_t* GetTrayWindowClass();
+  void UnregisterWindowClass();
+
+  static LRESULT CALLBACK TrayWndProc(HWND const window,
+                                      UINT const message,
+                                      WPARAM const wparam,
+                                      LPARAM const lparam) noexcept;
+
+  static SystemTray* GetThisFromHandle(HWND const window) noexcept;
+
+  virtual LRESULT TrayMessageHandler(HWND window,
+                                     UINT const message,
+                                     WPARAM const wparam,
+                                     LPARAM const lparam) noexcept;
+
+  bool CreateTrayWindow();
+  void DestoryTrayWindow();
+
  protected:
+  HWND tray_window_ = nullptr;
+  bool tray_class_registered_ = false;
   HWND window_ = nullptr;
   HMENU context_menu_ = nullptr;
   HICON icon_ = nullptr;
