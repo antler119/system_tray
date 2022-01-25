@@ -160,3 +160,16 @@ Recommended library that supports window control:
 
 - [bitsdojo_window](https://pub.dev/packages/bitsdojo_window)
 - [window_size (Google)](https://github.com/google/flutter-desktop-embedding/tree/master/plugins/window_size)
+
+# Q&A
+1. Q: If you encounter the following compilation error
+    ``` C++
+    Undefined symbols for architecture x86_64:
+      "___gxx_personality_v0", referenced from:
+          ...
+    ```
+    A: add **libc++.tbd**
+      ``` bash
+      1. open example/macos/Runner.xcodeproj
+      2. add 'libc++.tbd' to TARGET runner 'Link Binary With Libraries' 
+      ```

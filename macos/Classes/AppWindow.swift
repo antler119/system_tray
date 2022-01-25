@@ -1,6 +1,6 @@
 import FlutterMacOS
 
-class AppWindow : NSObject{
+class AppWindow : NSObject {
     var channel: FlutterMethodChannel
     var window: NSWindow
 
@@ -11,14 +11,22 @@ class AppWindow : NSObject{
 
     func showAppWindow() {
         print("showAppWindow title:\(self.window.title) rect:\(self.window.contentLayoutRect)");
-        self.window.windowController?.showWindow(self)
-        NSApp.activate(ignoringOtherApps:true)
-        self.window.orderFront(self)
+        DispatchQueue.main.async {
+            if self.window.isMiniaturized == true {
+                self.window.deminiaturize(self)
+            } else {
+                self.window.windowController?.showWindow(self)
+                NSApp.activate(ignoringOtherApps:true)
+                self.window.orderFront(self)
+            }
+        }
     }
-
+    
     func hideAppWindow() {
         print("hideAppWindow");
-        self.window.orderOut(self)
+        DispatchQueue.main.async {
+           self.window.orderOut(self)
+        }
     }
 
     func closeAppWindow() {

@@ -56,6 +56,7 @@ class SystemTray : NSObject, NSMenuDelegate {
                 let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
                 itemImage.size = destSize
                 statusItem?.button?.image = itemImage
+                statusItem?.button?.imagePosition = NSControl.ImagePosition.imageLeft
             } 
         }
         return true
@@ -73,11 +74,11 @@ class SystemTray : NSObject, NSMenuDelegate {
                 let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
                 itemImage.size = destSize
                 statusItem?.button?.image = itemImage
+                statusItem?.button?.imagePosition = NSControl.ImagePosition.imageLeft
             } else {
                 statusItem?.button?.image = nil
             }
         }
- 
         return true
     }
 

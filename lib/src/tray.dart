@@ -203,7 +203,7 @@ class SystemTray {
 
   String _joinIconPath(String assetPath) {
     if (Platform.isMacOS) {
-      return joinAll(['AppIcon']);
+      return joinAll([assetPath]);
     }
 
     return joinAll([
