@@ -1,6 +1,8 @@
 ## 0.0.8
 
 * tray icon support high DPI on windows
+* Fixed crash when minimize window, then click on menubar on macOS
+* support simple appwindow on ubuntu
 
 ## 0.0.7
 
