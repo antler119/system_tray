@@ -8,13 +8,29 @@
       "name": "(lldb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/example/build/macos/Build/Products/Debug/system_tray_example.app",
+      "sourceFileMap": {
+        "../..": "${workspaceFolder}"
+      },
+      "osx": {
+        "MIMode": "lldb",
+        "program": "${workspaceFolder}/example/build/macos/Build/Products/Debug/system_tray_example.app",
+      },
+      "linux": {
+        "MIMode": "gdb",
+        "program": "${workspaceFolder}/example/build/linux/x64/debug/bundle/system_tray_example",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+      },
       "args": [],
       "stopAtEntry": true,
       "cwd": "${fileDirname}",
       "environment": [],
       "externalConsole": false,
-      "MIMode": "lldb"
     },
     {
       "name": "(Windows) Launch",

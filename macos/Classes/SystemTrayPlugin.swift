@@ -19,6 +19,7 @@ let kSubMenuKey = "submenu";
 let kEnabledKey = "enabled";
 
 let kChannelAppWindowName = "flutter/system_tray/app_window"
+
 let kInitAppWindow = "InitAppWindow";
 let kShowAppWindow = "ShowAppWindow";
 let kHideAppWindow = "HideAppWindow";

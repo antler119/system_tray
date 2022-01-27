@@ -48,8 +48,12 @@ Smallest example:
 
 ```dart
 Future<void> initSystemTray() async {
-  final path =
+  String path =
       Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
+  if (Platform.isMacOS) {
+    path = 'AppIcon';
+  }
+
   final menu = [
     MenuItem(label: 'Show', onClicked: _appWindow.show),
     MenuItem(label: 'Hide', onClicked: _appWindow.hide),
@@ -69,8 +73,12 @@ Icon flashing effect example:
 
 ```dart
 Future<void> initSystemTray() async {
-  final path =
+  String path =
       Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
+  if (Platform.isMacOS) {
+    path = 'AppIcon';
+  }
+
   final menu = [
     MenuItem(label: 'Show', onClicked: _appWindow.show),
     MenuItem(label: 'Hide', onClicked: _appWindow.hide),

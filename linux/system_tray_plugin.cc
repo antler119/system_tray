@@ -5,10 +5,13 @@
 #include <sys/utsname.h>
 
 #include <cstring>
+#include <memory>
 
+#include "app_window.h"
 #include "tray.h"
 
 const static char kBadArgumentsError[] = "Bad Arguments";
+const static char kOutOfMemoryError[] = "Out of memory";
 
 const static char kChannelName[] = "flutter/system_tray";
 
@@ -28,6 +31,13 @@ const static char kSeparatorKey[] = "separator";
 const static char kSubMenuKey[] = "submenu";
 const static char kEnabledKey[] = "enabled";
 
+const static char kChannelAppWindowName[] = "flutter/system_tray/app_window";
+
+const static char kInitAppWindow[] = "InitAppWindow";
+const static char kShowAppWindow[] = "ShowAppWindow";
+const static char kHideAppWindow[] = "HideAppWindow";
+const static char kCloseAppWindow[] = "CloseAppWindow";
+
 #define SYSTEM_TRAY_PLUGIN(obj)                                     \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), system_tray_plugin_get_type(), \
                               SystemTrayPlugin))
@@ -39,7 +49,11 @@ struct _SystemTrayPlugin {
 
   FlMethodChannel* channel;
 
-  SystemTray* system_tray;
+  FlMethodChannel* channel_app_window;
+
+  std::unique_ptr<SystemTray> system_tray;
+
+  std::unique_ptr<AppWindow> app_window;
 };
 
 G_DEFINE_TYPE(SystemTrayPlugin, system_tray_plugin, g_object_get_type())
@@ -254,6 +268,127 @@ static FlMethodResponse* set_context_menu(SystemTrayPlugin* self,
   return response;
 }
 
+static FlMethodResponse* init_app_window(SystemTrayPlugin* self,
+                                         FlValue* args) {
+  g_autoptr(FlValue) result = fl_value_new_bool(FALSE);
+  FlMethodResponse* response = nullptr;
+
+  do {
+    if (self->app_window) {
+      result = fl_value_new_bool(TRUE);
+      break;
+    }
+
+    FlView* view = fl_plugin_registrar_get_view(self->registrar);
+    if (view == nullptr) {
+      response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+          kBadArgumentsError, "Expected view", fl_value_new_bool(FALSE)));
+      break;
+    }
+
+    GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+    if (window == nullptr) {
+      response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+          kBadArgumentsError, "Expected window", fl_value_new_bool(FALSE)));
+      break;
+    }
+
+    self->app_window = std::make_unique<AppWindow>();
+    if (!self->app_window) {
+      response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+          kOutOfMemoryError, "Out of memory", fl_value_new_bool(FALSE)));
+      break;
+    }
+
+    if (!self->app_window->init_app_window(window)) {
+      response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+          kBadArgumentsError, "Unable to init appwindow",
+          fl_value_new_bool(FALSE)));
+      break;
+    }
+
+    result = fl_value_new_bool(TRUE);
+
+  } while (false);
+
+  if (nullptr == response) {
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
+  return response;
+}
+
+static FlMethodResponse* show_app_window(SystemTrayPlugin* self,
+                                         FlValue* args) {
+  g_autoptr(FlValue) result = fl_value_new_bool(FALSE);
+  FlMethodResponse* response = nullptr;
+
+  do {
+    if (!self->app_window) {
+      response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+          kBadArgumentsError, "Expected app window", fl_value_new_bool(FALSE)));
+      break;
+    }
+
+    self->app_window->show_app_window();
+
+    result = fl_value_new_bool(TRUE);
+
+  } while (false);
+
+  if (nullptr == response) {
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
+  return response;
+}
+
+static FlMethodResponse* hide_app_window(SystemTrayPlugin* self,
+                                         FlValue* args) {
+  g_autoptr(FlValue) result = fl_value_new_bool(FALSE);
+  FlMethodResponse* response = nullptr;
+
+  do {
+    if (!self->app_window) {
+      response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+          kBadArgumentsError, "Expected app window", fl_value_new_bool(FALSE)));
+      break;
+    }
+
+    self->app_window->hide_app_window();
+
+    result = fl_value_new_bool(TRUE);
+
+  } while (false);
+
+  if (nullptr == response) {
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
+  return response;
+}
+
+static FlMethodResponse* close_app_window(SystemTrayPlugin* self,
+                                          FlValue* args) {
+  g_autoptr(FlValue) result = fl_value_new_bool(FALSE);
+  FlMethodResponse* response = nullptr;
+
+  do {
+    if (!self->app_window) {
+      response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+          kBadArgumentsError, "Expected app window", fl_value_new_bool(FALSE)));
+      break;
+    }
+
+    self->app_window->close_app_window();
+
+    result = fl_value_new_bool(TRUE);
+
+  } while (false);
+
+  if (nullptr == response) {
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
+  return response;
+}
+
 // Called when a method call is received from Flutter.
 static void system_tray_plugin_handle_method_call(SystemTrayPlugin* self,
                                                   FlMethodCall* method_call) {
@@ -270,6 +405,14 @@ static void system_tray_plugin_handle_method_call(SystemTrayPlugin* self,
     response = set_system_tray_info(self, args);
   } else if (strcmp(method, kSetContextMenu) == 0) {
     response = set_context_menu(self, args);
+  } else if (strcmp(method, kInitAppWindow) == 0) {
+    response = init_app_window(self, args);
+  } else if (strcmp(method, kShowAppWindow) == 0) {
+    response = show_app_window(self, args);
+  } else if (strcmp(method, kHideAppWindow) == 0) {
+    response = hide_app_window(self, args);
+  } else if (strcmp(method, kCloseAppWindow) == 0) {
+    response = close_app_window(self, args);
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }
@@ -285,11 +428,6 @@ static void system_tray_plugin_dispose(GObject* object) {
 
   g_clear_object(&self->registrar);
   g_clear_object(&self->channel);
-
-  if (self->system_tray) {
-    delete self->system_tray;
-    self->system_tray = nullptr;
-  }
 
   G_OBJECT_CLASS(system_tray_plugin_parent_class)->dispose(object);
 }
@@ -322,10 +460,20 @@ void system_tray_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
       fl_method_channel_new(fl_plugin_registrar_get_messenger(registrar),
                             kChannelName, FL_METHOD_CODEC(codec));
 
-  plugin->system_tray = new SystemTray();
+  g_autoptr(FlStandardMethodCodec) app_window_codec =
+      fl_standard_method_codec_new();
+  plugin->channel_app_window = fl_method_channel_new(
+      fl_plugin_registrar_get_messenger(registrar), kChannelAppWindowName,
+      FL_METHOD_CODEC(app_window_codec));
+
+  plugin->system_tray = std::make_unique<SystemTray>();
 
   fl_method_channel_set_method_call_handler(
       plugin->channel, method_call_cb, g_object_ref(plugin), g_object_unref);
+
+  fl_method_channel_set_method_call_handler(
+      plugin->channel_app_window, method_call_cb, g_object_ref(plugin),
+      g_object_unref);
 
   g_object_unref(plugin);
 }

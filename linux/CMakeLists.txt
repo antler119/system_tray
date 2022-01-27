@@ -11,7 +11,8 @@ pkg_check_modules (APPINDICATOR REQUIRED IMPORTED_TARGET appindicator3-0.1)
 
 add_library(${PLUGIN_NAME} SHARED
   "system_tray_plugin.cc"
-  "tray"
+  "tray.cc"
+  "app_window.cc"
 )
 apply_standard_settings(${PLUGIN_NAME})
 set_target_properties(${PLUGIN_NAME} PROPERTIES
