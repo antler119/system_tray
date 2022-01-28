@@ -12,8 +12,10 @@ constexpr const wchar_t kTrayWindowClassName[] =
 }
 
 const static char kSystemTrayEventLButtnUp[] = "leftMouseUp";
+const static char kSystemTrayEventLButtnDown[] = "leftMouseDown";
 const static char kSystemTrayEventLButtonDblClk[] = "leftMouseDblClk";
 const static char kSystemTrayEventRButtnUp[] = "rightMouseUp";
+const static char kSystemTrayEventRButtnDown[] = "rightMouseDown";
 
 // Converts the given UTF-8 string to UTF-16.
 static std::wstring Utf16FromUtf8(const std::string& utf8_string) {
@@ -121,6 +123,10 @@ bool SystemTray::setContextMenu(HMENU context_menu) {
   return true;
 }
 
+void SystemTray::popUpContextMenu() {
+  ShowPopupMenu();
+}
+
 bool SystemTray::installTrayIcon(HWND window,
                                  const std::string* title,
                                  const std::string* iconPath,
@@ -210,6 +216,11 @@ std::optional<LRESULT> SystemTray::OnTrayIconCallback(UINT id,
                                                       const POINT& pt) {
   do {
     switch (notifyMsg) {
+      case WM_LBUTTONDOWN: {
+        if (delegate_) {
+          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtnDown);
+        }
+      } break;
       case WM_LBUTTONUP: {
         if (delegate_) {
           delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtnUp);
@@ -220,12 +231,21 @@ std::optional<LRESULT> SystemTray::OnTrayIconCallback(UINT id,
           delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtonDblClk);
         }
       } break;
+      case WM_RBUTTONDOWN: {
+        if (delegate_) {
+          delegate_->OnSystemTrayEventCallback(kSystemTrayEventRButtnDown);
+        }
+      } break;
       case WM_RBUTTONUP: {
         if (delegate_) {
           delegate_->OnSystemTrayEventCallback(kSystemTrayEventRButtnUp);
         }
-        ShowPopupMenu();
       } break;
+        // default: {
+        //   printf("OnTrayIconCallback id:%d, 0x%x, pt[%d,%d]\n", id,
+        //   notifyMsg,
+        //          pt.x, pt.y);
+        // } break;
     }
 
   } while (false);

@@ -3,17 +3,13 @@
 
 A [Flutter package](https://github.com/antler119/system_tray.git) that that enables support for system tray menu for desktop flutter apps. **on Windows, macOS and Linux**.
 
-## Features
-* Modify system tray title/icon/tooltip
-* Handle system tray event leftMouseUp/rightMouseUp (only for macos、windows)
-
 ## Install
 In the pubspec.yaml of your flutter project, add the following dependency:
 
 ```yaml
 dependencies:
   ...
-  system_tray: ^0.0.8
+  system_tray: ^0.0.9
 ```
 
 In your library add the following import:
@@ -32,18 +28,94 @@ sudo apt-get install appindicator3-0.1 libappindicator3-dev
 ## Example App
 ### Windows
 
-<img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_windows.jpg">
+<img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_windows.png">
 
 ### macOS
 
-<img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_macos.jpg">
+<img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_macos.png">
 
 ### Linux
 
-<img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_ubuntu.jpg">
+<img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_ubuntu.png">
 
+## API
 
-## Usage:
+<table>
+    <tr>
+        <th>Method</th>
+        <th>Description</th>
+        <th>Windows</th>
+        <th>macOS</th>
+        <th>Linux</th>
+    </tr>
+    <tr>
+        <td>initSystemTray</td>
+        <td>Initialize system tray</td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>✔️</td>
+    </tr>
+    <tr>
+        <td>setSystemTrayInfo</td>
+        <td>Modify the tray info</td>
+        <td>
+          <ul>
+            <li>icon</li>
+            <li>toolTip</li>
+          </ul>
+        </td>
+        <td>
+          <ul>
+            <li>title</li>
+            <li>icon</li>
+            <li>toolTip</li>
+          </ul>
+        </td>
+       <td>
+          <ul>
+            <li>icon</li>
+          </ul>
+        </td>
+    </tr>
+    <tr>
+        <td>setContextMenu</td>
+        <td>Set the tray context menu</td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>✔️</td>
+    </tr>
+       <tr>
+        <td>popUpContextMenu</td>
+        <td>Popup the tray context menu</td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>➖</td>
+    </tr>
+    <tr>
+        <td>registerSystemTrayEventHandler</td>
+        <td>Register system tray event</td>
+        <td>
+          <ul>
+            <li>leftMouseUp</li>
+            <li>leftMouseDown</li>
+            <li>leftMouseDblClk</li>
+            <li>rightMouseUp</li>
+            <li>rightMouseDown</li>
+          </ul>
+        </td>
+        <td>         
+          <ul>
+            <li>leftMouseUp</li>
+            <li>leftMouseDown</li>
+            <li>rightMouseUp</li>
+            <li>rightMouseDown</li>
+          </ul>
+        </td>
+        <td>➖</td>
+    </tr>
+</table>
+
+## Usage
 Smallest example:
 
 ```dart
@@ -60,16 +132,29 @@ Future<void> initSystemTray() async {
     MenuItem(label: 'Exit', onClicked: _appWindow.close),
   ];
 
+  // We first init the systray menu and then add the menu entries
   await _systemTray.initSystemTray(
     title: "system tray",
     iconPath: path,
   );
 
   await _systemTray.setContextMenu(menu);
+
+  // handle system tray event
+  _systemTray.registerSystemTrayEventHandler((eventName) {
+    debugPrint("eventName: $eventName");
+    if (eventName == "leftMouseDown") {
+    } else if (eventName == "leftMouseUp") {
+      _systemTray.popUpContextMenu();
+    } else if (eventName == "rightMouseDown") {
+    } else if (eventName == "rightMouseUp") {
+      _appWindow.show();
+    }
+  });
 }
 ```
 
-Icon flashing effect example:
+Flashing icon example:
 
 ```dart
 Future<void> initSystemTray() async {
@@ -113,27 +198,43 @@ Future<void> initSystemTray() async {
     ),
     MenuSeparator(),
     SubMenu(
-      label: "SubMenu",
+      label: "Test API",
       children: [
-        MenuItem(
-          label: 'SubItem1',
-          enabled: false,
-          onClicked: () {
-            debugPrint("click SubItem1");
-          },
+        SubMenu(
+          label: "setSystemTrayInfo",
+          children: [
+            MenuItem(
+              label: 'set title',
+              onClicked: () {
+                final String text = WordPair.random().asPascalCase;
+                debugPrint("click 'set title' : $text");
+                _systemTray.setSystemTrayInfo(
+                  title: text,
+                );
+              },
+            ),
+            MenuItem(
+              label: 'set icon path',
+              onClicked: () {
+                debugPrint("click 'set icon path' : $path");
+                _systemTray.setSystemTrayInfo(
+                  iconPath: path,
+                );
+              },
+            ),
+            MenuItem(
+              label: 'set tooltip',
+              onClicked: () {
+                final String text = WordPair.random().asPascalCase;
+                debugPrint("click 'set tooltip' : $text");
+                _systemTray.setSystemTrayInfo(
+                  toolTip: text,
+                );
+              },
+            ),
+          ],
         ),
-        MenuItem(
-          label: 'SubItem2',
-          onClicked: () {
-            debugPrint("click SubItem2");
-          },
-        ),
-        MenuItem(
-          label: 'SubItem3',
-          onClicked: () {
-            debugPrint("click SubItem3");
-          },
-        ),
+        MenuItem(label: 'disabled Item', enabled: false),
       ],
     ),
     MenuSeparator(),
@@ -155,7 +256,11 @@ Future<void> initSystemTray() async {
   // handle system tray event
   _systemTray.registerSystemTrayEventHandler((eventName) {
     debugPrint("eventName: $eventName");
-    if (eventName == "leftMouseUp") {
+    if (eventName == "leftMouseDown") {
+    } else if (eventName == "leftMouseUp") {
+      _systemTray.popUpContextMenu();
+    } else if (eventName == "rightMouseDown") {
+    } else if (eventName == "rightMouseUp") {
       _appWindow.show();
     }
   });

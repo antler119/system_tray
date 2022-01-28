@@ -7,8 +7,9 @@ bool AppWindow::initAppWindow(HWND window, HWND flutter_window) {
 }
 
 bool AppWindow::showAppWindow(bool visible) {
-  if (!IsWindow(window_))
+  if (!IsWindow(window_)) {
     return false;
+  }
 
   if (visible) {
     activeWindow();
@@ -20,19 +21,22 @@ bool AppWindow::showAppWindow(bool visible) {
 }
 
 bool AppWindow::closeAppWindow() {
-  if (!IsWindow(window_))
+  if (!IsWindow(window_)) {
     return false;
+  }
 
   PostMessage(window_, WM_SYSCOMMAND, SC_CLOSE, 0);
   return true;
 }
 
 void AppWindow::activeWindow() {
-  if (!IsWindow(window_))
+  if (!IsWindow(window_)) {
     return;
+  }
 
-  if (!::IsWindowVisible(window_))
+  if (!::IsWindowVisible(window_)) {
     ShowWindow(window_, SW_SHOW);
+  }
 
   if (IsIconic(window_)) {
     SendMessage(window_, WM_SYSCOMMAND, SC_RESTORE | HTCAPTION, 0);
@@ -43,8 +47,9 @@ void AppWindow::activeWindow() {
 }
 
 void AppWindow::refreshFlutterWindow() {
-  if (!IsWindow(flutter_window_))
+  if (!IsWindow(flutter_window_)) {
     return;
+  }
 
   RECT rc = {};
   GetClientRect(flutter_window_, &rc);

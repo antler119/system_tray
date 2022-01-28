@@ -27,6 +27,8 @@ const static char kChannelName[] = "flutter/system_tray";
 const static char kInitSystemTray[] = "InitSystemTray";
 const static char kSetSystemTrayInfo[] = "SetSystemTrayInfo";
 const static char kSetContextMenu[] = "SetContextMenu";
+const static char kPopupContextMenu[] = "PopupContextMenu";
+
 const static char kMenuItemSelectedCallbackMethod[] =
     "MenuItemSelectedCallback";
 const static char kSystemTrayEventCallbackMethod[] = "SystemTrayEventCallback";
@@ -119,6 +121,10 @@ class SystemTrayPlugin : public flutter::Plugin, public SystemTray::Delegate {
       flutter::MethodResult<flutter::EncodableValue>& result);
 
   void setContextMenu(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call,
+      flutter::MethodResult<flutter::EncodableValue>& result);
+
+  void popupContextMenu(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
 
@@ -222,6 +228,8 @@ void SystemTrayPlugin::HandleMethodCall(
     setSystemTrayInfo(method_call, *result);
   } else if (method_call.method_name().compare(kSetContextMenu) == 0) {
     setContextMenu(method_call, *result);
+  } else if (method_call.method_name().compare(kPopupContextMenu) == 0) {
+    popupContextMenu(method_call, *result);
   } else if (method_call.method_name().compare(kInitAppWindow) == 0) {
     initAppWindow(method_call, *result);
   } else if (method_call.method_name().compare(kShowAppWindow) == 0) {
@@ -265,7 +273,8 @@ void SystemTrayPlugin::initSystemTray(
     const std::string* toolTip =
         std::get_if<std::string>(ValueOrNull(*map, kToolTipKey));
 
-    if (!system_tray_->initSystemTray(window, title, iconPath, toolTip)) {
+    if (!system_tray_ ||
+        !system_tray_->initSystemTray(window, title, iconPath, toolTip)) {
       result.Error(kBadArgumentsError, "Unable to init system tray",
                    flutter::EncodableValue(false));
       break;
@@ -297,7 +306,8 @@ void SystemTrayPlugin::setSystemTrayInfo(
     const std::string* toolTip =
         std::get_if<std::string>(ValueOrNull(*map, kToolTipKey));
 
-    if (!system_tray_->setSystemTrayInfo(title, iconPath, toolTip)) {
+    if (!system_tray_ ||
+        !system_tray_->setSystemTrayInfo(title, iconPath, toolTip)) {
       result.Error(kBadArgumentsError, "Unable to set system tray info",
                    flutter::EncodableValue(false));
       break;
@@ -389,7 +399,7 @@ void SystemTrayPlugin::setContextMenu(
       break;
     }
 
-    if (!system_tray_->setContextMenu(popup_menu)) {
+    if (!system_tray_ || !system_tray_->setContextMenu(popup_menu)) {
       result.Error(kBadArgumentsError, "Unable to set context menu",
                    flutter::EncodableValue(false));
       break;
@@ -403,6 +413,22 @@ void SystemTrayPlugin::setContextMenu(
   if (popup_menu) {
     DestroyMenu(popup_menu);
   }
+}
+
+void SystemTrayPlugin::popupContextMenu(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    if (!system_tray_) {
+      result.Error(kBadArgumentsError, "Expected system tray",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    system_tray_->popUpContextMenu();
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
 }
 
 std::optional<LRESULT> SystemTrayPlugin::HandleWindowProc(HWND hwnd,

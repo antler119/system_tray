@@ -30,6 +30,8 @@ class SystemTray {
 
   bool setContextMenu(HMENU context_menu);
 
+  void popUpContextMenu();
+
   std::optional<LRESULT> HandleWindowProc(HWND hwnd,
                                           UINT message,
                                           WPARAM wparam,

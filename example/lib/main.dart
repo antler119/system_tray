@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-
+import 'package:english_words/english_words.dart';
 import 'package:system_tray/system_tray.dart';
 
 void main() async {
@@ -88,27 +88,43 @@ class _MyAppState extends State<MyApp> {
       ),
       MenuSeparator(),
       SubMenu(
-        label: "SubMenu",
+        label: "Test API",
         children: [
-          MenuItem(
-            label: 'SubItem1',
-            enabled: false,
-            onClicked: () {
-              debugPrint("click SubItem1");
-            },
+          SubMenu(
+            label: "setSystemTrayInfo",
+            children: [
+              MenuItem(
+                label: 'set title',
+                onClicked: () {
+                  final String text = WordPair.random().asPascalCase;
+                  debugPrint("click 'set title' : $text");
+                  _systemTray.setSystemTrayInfo(
+                    title: text,
+                  );
+                },
+              ),
+              MenuItem(
+                label: 'set icon path',
+                onClicked: () {
+                  debugPrint("click 'set icon path' : $path");
+                  _systemTray.setSystemTrayInfo(
+                    iconPath: path,
+                  );
+                },
+              ),
+              MenuItem(
+                label: 'set toolTip',
+                onClicked: () {
+                  final String text = WordPair.random().asPascalCase;
+                  debugPrint("click 'set toolTip' : $text");
+                  _systemTray.setSystemTrayInfo(
+                    toolTip: text,
+                  );
+                },
+              ),
+            ],
           ),
-          MenuItem(
-            label: 'SubItem2',
-            onClicked: () {
-              debugPrint("click SubItem2");
-            },
-          ),
-          MenuItem(
-            label: 'SubItem3',
-            onClicked: () {
-              debugPrint("click SubItem3");
-            },
-          ),
+          MenuItem(label: 'disabled Item', enabled: false),
         ],
       ),
       MenuSeparator(),
@@ -130,8 +146,12 @@ class _MyAppState extends State<MyApp> {
     // handle system tray event
     _systemTray.registerSystemTrayEventHandler((eventName) {
       debugPrint("eventName: $eventName");
-      if (eventName == "leftMouseUp") {
+      if (eventName == "leftMouseDown") {
+      } else if (eventName == "leftMouseUp") {
         _appWindow.show();
+      } else if (eventName == "rightMouseDown") {
+      } else if (eventName == "rightMouseUp") {
+        _systemTray.popUpContextMenu();
       }
     });
   }

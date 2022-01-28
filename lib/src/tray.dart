@@ -12,6 +12,8 @@ const String _kChannelName = "flutter/system_tray";
 const String _kInitSystemTray = "InitSystemTray";
 const String _kSetSystemTrayInfo = "SetSystemTrayInfo";
 const String _kSetContextMenu = "SetContextMenu";
+const String _kPopupContextMenu = "PopupContextMenu";
+
 const String _kMenuItemSelectedCallbackMethod = 'MenuItemSelectedCallback';
 const String _kSystemTrayEventCallbackMethod = 'SystemTrayEventCallback';
 
@@ -51,7 +53,7 @@ class SystemTray {
   //
   SystemTrayEventCallback? _systemTrayEventCallback;
 
-  // Show a SystemTray icon
+  /// Show a SystemTray icon
   Future<bool> initSystemTray({
     required String title,
     required String iconPath,
@@ -68,6 +70,7 @@ class SystemTray {
     return value;
   }
 
+  /// Set system info info
   Future<bool> setSystemTrayInfo({
     String? title,
     String? iconPath,
@@ -84,6 +87,7 @@ class SystemTray {
     return value;
   }
 
+  /// register listener for system tray event.
   void registerSystemTrayEventHandler(SystemTrayEventCallback callback) {
     _systemTrayEventCallback = callback;
   }
@@ -102,6 +106,12 @@ class SystemTray {
     } on PlatformException catch (e) {
       debugPrint('Platform exception setting menu: ${e.message}');
     }
+  }
+
+  /// Pop up the context menu.
+  ///
+  Future<void> popUpContextMenu() async {
+    await _platformChannel.invokeMethod(_kPopupContextMenu);
   }
 
   /// Converts [menus] to a representation that can be sent in the arguments to

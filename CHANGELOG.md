@@ -1,8 +1,13 @@
+## 0.0.9
+
+* [Feature] add popUpContextMenu
+* [Feature] add new system tray event (leftMouseDown / rightMouseDown)
+  
 ## 0.0.8
 
-* tray icon support high DPI on windows
-* Fixed crash when minimize window, then click on menubar on macOS
-* support simple appwindow on ubuntu
+* [Feature] tray icon support high DPI on windows
+* [Feature] support simple class appwindow for control window on all platforms
+* [Fixed] fixed crash when minimize window, then click on menubar on macOS
 
 ## 0.0.7
 
