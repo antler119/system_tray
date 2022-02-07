@@ -122,9 +122,6 @@ Smallest example:
 Future<void> initSystemTray() async {
   String path =
       Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
-  if (Platform.isMacOS) {
-    path = 'AppIcon';
-  }
 
   final menu = [
     MenuItem(label: 'Show', onClicked: _appWindow.show),
@@ -160,9 +157,6 @@ Flashing icon example:
 Future<void> initSystemTray() async {
   String path =
       Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
-  if (Platform.isMacOS) {
-    path = 'AppIcon';
-  }
 
   final menu = [
     MenuItem(label: 'Show', onClicked: _appWindow.show),

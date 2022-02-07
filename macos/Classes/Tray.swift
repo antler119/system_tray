@@ -40,7 +40,7 @@ class SystemTray: NSObject, NSMenuDelegate {
     }
   }
 
-  func initSystemTray(title: String?, iconPath: String?, toolTip: String?) -> Bool {
+  func initSystemTray(title: String?, base64Icon: String?, toolTip: String?) -> Bool {
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
     statusItem?.button?.action = #selector(onSystemTrayEventCallback(sender:))
@@ -56,8 +56,9 @@ class SystemTray: NSObject, NSMenuDelegate {
       statusItem?.button?.title = title
     }
 
-    if let iconPath = iconPath {
-      if let itemImage = NSImage(named: iconPath) {
+    if let base64Icon = base64Icon {
+      if let imageData = Data(base64Encoded: base64Icon, options: .ignoreUnknownCharacters),
+         let itemImage = NSImage(data: imageData) {
         let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
         itemImage.size = destSize
         statusItem?.button?.image = itemImage
@@ -67,23 +68,25 @@ class SystemTray: NSObject, NSMenuDelegate {
     return true
   }
 
-  func setSystemTrayInfo(title: String?, iconPath: String?, toolTip: String?) -> Bool {
+  func setSystemTrayInfo(title: String?, base64Icon: String?, toolTip: String?) -> Bool {
     if let toolTip = toolTip {
       statusItem?.button?.toolTip = toolTip
     }
     if let title = title {
       statusItem?.button?.title = title
     }
-    if let iconPath = iconPath {
-      if let itemImage = NSImage(named: iconPath) {
+    if let base64Icon = base64Icon {
+      if let imageData = Data(base64Encoded: base64Icon, options: .ignoreUnknownCharacters),
+         let itemImage = NSImage(data: imageData) {
         let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
         itemImage.size = destSize
         statusItem?.button?.image = itemImage
         statusItem?.button?.imagePosition = NSControl.ImagePosition.imageLeft
-      } else {
-        statusItem?.button?.image = nil
+        return true
       }
     }
+
+    statusItem?.button?.image = nil
     return true
   }
 
