@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +22,7 @@ const String _kSystemTrayEventCallbackMethod = 'SystemTrayEventCallback';
 
 const String _kTitleKey = "title";
 const String _kIconPathKey = "iconpath";
+const String _kbase64IconKey = "base64icon";
 const String _kToolTipKey = "tooltip";
 const String _kIdKey = 'id';
 const String _kTypeKey = 'type';
@@ -64,6 +68,7 @@ class SystemTray {
       <String, dynamic>{
         _kTitleKey: title,
         _kIconPathKey: _joinIconPath(iconPath),
+        _kbase64IconKey: await _base64Image(iconPath),
         _kToolTipKey: toolTip,
       },
     );
@@ -81,10 +86,21 @@ class SystemTray {
       <String, dynamic>{
         _kTitleKey: title,
         _kIconPathKey: iconPath == null ? null : _joinIconPath(iconPath),
+        _kbase64IconKey: await _base64Image(iconPath),
         _kToolTipKey: toolTip,
       },
     );
     return value;
+  }
+
+  /// Returns Base64 Image
+  Future<String?> _base64Image(String? iconPath) async {
+    if (iconPath?.isNotEmpty != true) {
+      return null;
+    }
+
+    ByteData imageData = await rootBundle.load(iconPath!);
+    return base64Encode(imageData.buffer.asUint8List());
   }
 
   /// register listener for system tray event.

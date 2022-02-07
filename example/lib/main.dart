@@ -1,13 +1,13 @@
-import 'dart:io';
 import 'dart:async';
-
-import 'package:flutter/material.dart';
+import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:english_words/english_words.dart';
+import 'package:flutter/material.dart';
 import 'package:system_tray/system_tray.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 
   doWhenWindowReady(() {
@@ -50,9 +50,6 @@ class _MyAppState extends State<MyApp> {
   Future<void> initSystemTray() async {
     String path =
         Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
-    if (Platform.isMacOS) {
-      path = 'AppIcon';
-    }
 
     final menu = [
       MenuItem(label: 'Show', onClicked: _appWindow.show),
