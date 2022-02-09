@@ -4,11 +4,12 @@ typedef MenuItemSelectedCallback = void Function();
 /// The base type for an individual menu item that can be shown in a menu.
 abstract class MenuItemBase {
   /// Creates a new menu item with the give label.
-  const MenuItemBase(this.type, this.label);
+  const MenuItemBase(this.label);
 
   /// The displayed label for the menu item.
-  final String type;
   final String label;
+
+  String type() => this.runtimeType.toString();
 }
 
 /// A standard menu item, with no submenus.
@@ -21,7 +22,7 @@ class MenuItem extends MenuItemBase {
     required String label,
     this.enabled = true,
     this.onClicked,
-  }) : super('lable', label);
+  }) : super(label);
 
   /// Whether or not the menu item is enabled.
   final bool enabled;
@@ -35,8 +36,7 @@ class MenuItem extends MenuItemBase {
 /// The item itself can't be selected, it just displays the submenu.
 class SubMenu extends MenuItemBase {
   /// Creates a new submenu with the given [label] and [children].
-  SubMenu({required String label, required this.children})
-      : super('submenu', label);
+  SubMenu({required String label, required this.children}) : super(label);
 
   /// The menu items contained in the submenu.
   final List<MenuItemBase> children;
@@ -45,5 +45,5 @@ class SubMenu extends MenuItemBase {
 /// A menu item that serves as a separator, generally drawn as a line.
 class MenuSeparator extends MenuItemBase {
   /// Creates a new separator item.
-  MenuSeparator() : super('separator', '');
+  MenuSeparator() : super('');
 }

@@ -10,15 +10,20 @@ let kPopupContextMenu = "PopupContextMenu"
 
 let kMenuItemSelectedCallbackMethod = "MenuItemSelectedCallback"
 
+// Properties
 let kTitleKey = "title"
 let kIconPathKey = "iconpath"
 let kToolTipKey = "tooltip"
 let kIdKey = "id"
 let kTypeKey = "type"
 let kLabelKey = "label"
-let kSeparatorKey = "separator"
-let kSubMenuKey = "submenu"
 let kEnabledKey = "enabled"
+let kSubMenuKey = "submenu"
+
+// Types of menu items
+let kMenuItemKey = "MenuItem"
+let kSubMenuItemKey = "SubMenu"
+let kSeparatorItemKey = "MenuSeparator"
 
 let kChannelAppWindowName = "flutter/system_tray/app_window"
 
@@ -108,9 +113,9 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
     let isEnabled = item[kEnabledKey] as? Bool ?? false
 
     switch type! {
-    case kSeparatorKey:
+    case kSeparatorItemKey:
       menu.addItem(.separator())
-    case kSubMenuKey:
+    case kSubMenuItemKey:
       let subMenu = NSMenu()
       let children = item[kSubMenuKey] as? [[String: Any]] ?? [[String: Any]]()
       if valueToMenu(menu: subMenu, items: children) {
@@ -119,13 +124,15 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
         menuItem.submenu = subMenu
         menu.addItem(menuItem)
       }
-    default:
+    case kMenuItemKey:
       let menuItem = NSMenuItem()
       menuItem.title = label
       menuItem.target = self
       menuItem.action = isEnabled ? #selector(onMenuItemSelectedCallback) : nil
       menuItem.tag = id
       menu.addItem(menuItem)
+    default:
+        return false;
     }
 
     return true

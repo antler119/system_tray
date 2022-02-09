@@ -131,26 +131,23 @@ class SystemTray {
   /// platform channel to the native plugin.
   Map<String, dynamic> _channelRepresentationForMenuItem(MenuItemBase item) {
     final representation = <String, dynamic>{};
-    if (item is MenuSeparator) {
-      representation[_kTypeKey] = item.type;
-    } else {
-      representation[_kLabelKey] = item.label;
-      if (item is SubMenu) {
-        representation[_kTypeKey] = item.type;
-        representation[_kSubMenuKey] =
-            _channelRepresentationForMenu(item.children);
-      } else if (item is MenuItem) {
-        representation[_kTypeKey] = item.type;
-        final handler = item.onClicked;
-        if (handler != null) {
-          representation[_kIdKey] = _storeMenuCallback(handler);
-        }
-        representation[_kEnabledKey] = item.enabled;
-      } else {
-        throw ArgumentError(
-            'Unknown MenuItemBase type: $item (${item.runtimeType})');
-      }
+    representation[_kTypeKey] = item.type();
+    representation[_kLabelKey] = item.label;
+    // Nothing more required for MenuSeparator
+
+    if (item is SubMenu) {
+      representation[_kSubMenuKey] =
+          _channelRepresentationForMenu(item.children);
     }
+
+    if (item is MenuItem) {
+      final handler = item.onClicked;
+      if (handler != null) {
+        representation[_kIdKey] = _storeMenuCallback(handler);
+      }
+      representation[_kEnabledKey] = item.enabled;
+    }
+
     return representation;
   }
 
