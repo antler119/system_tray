@@ -56,8 +56,6 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    print("method: \(call.method)")
-
     switch call.method {
     case kInitSystemTray:
       initSystemTray(call, result)
