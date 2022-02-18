@@ -27,6 +27,7 @@ const String _kTypeKey = 'type';
 const String _kLabelKey = 'label';
 const String _kSubMenuKey = 'submenu';
 const String _kEnabledKey = 'enabled';
+const String _kCheckedKey = 'checked';
 
 /// A callback provided to [SystemTray] to handle system tray click event.
 typedef SystemTrayEventCallback = void Function(String eventName);
@@ -169,6 +170,14 @@ class SystemTray {
           representation[_kIdKey] = _storeMenuCallback(handler);
         }
         representation[_kEnabledKey] = item.enabled;
+      } else if (item is MenuCheckbox) {
+        representation[_kTypeKey] = item.type;
+        final handler = item.onClicked;
+        if (handler != null) {
+          representation[_kIdKey] = _storeMenuCallback(handler);
+        }
+        representation[_kEnabledKey] = item.enabled;
+        representation[_kCheckedKey] = item.checked;
       } else {
         throw ArgumentError(
             'Unknown MenuItemBase type: $item (${item.runtimeType})');

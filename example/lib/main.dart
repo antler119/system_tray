@@ -32,6 +32,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final SystemTray _systemTray = SystemTray();
   final AppWindow _appWindow = AppWindow();
+  late List<MenuItemBase> _trayMenu;
 
   Timer? _timer;
   bool _toogleTrayIcon = true;
@@ -54,7 +55,7 @@ class _MyAppState extends State<MyApp> {
 
     List<String> iconList = ['darts_icon', 'gift_icon'];
 
-    final menu = [
+    _trayMenu = [
       MenuItem(label: 'Show', onClicked: _appWindow.show),
       MenuItem(label: 'Hide', onClicked: _appWindow.hide),
       MenuItem(
@@ -130,6 +131,32 @@ class _MyAppState extends State<MyApp> {
         ],
       ),
       MenuSeparator(),
+      MenuCheckbox(
+        label: 'Checkbox 1',
+        checked: true,
+        onClicked: () {
+          debugPrint("click 'Checkbox 1'");
+        },
+      ),
+      MenuCheckbox(
+        label: 'Checkbox 2',
+        onClicked: () {
+          debugPrint("click 'Checkbox 2'");
+        },
+      ),
+      MenuCheckbox(
+        label: 'Checkbox 3',
+        checked: true,
+        onClicked: () {
+          debugPrint("click 'Checkbox 3'");
+
+          (_trayMenu.elementAt(9) as MenuCheckbox).checked =
+              !(_trayMenu.elementAt(9) as MenuCheckbox).checked;
+
+          _systemTray.setContextMenu(_trayMenu);
+        },
+      ),
+      MenuSeparator(),
       MenuItem(
         label: 'Exit',
         onClicked: _appWindow.close,
@@ -143,17 +170,15 @@ class _MyAppState extends State<MyApp> {
       toolTip: "How to use system tray with Flutter",
     );
 
-    await _systemTray.setContextMenu(menu);
+    await _systemTray.setContextMenu(_trayMenu);
 
     // handle system tray event
     _systemTray.registerSystemTrayEventHandler((eventName) {
       debugPrint("eventName: $eventName");
-      if (eventName == "leftMouseDown") {
-      } else if (eventName == "leftMouseUp") {
-        _appWindow.show();
-      } else if (eventName == "rightMouseDown") {
-      } else if (eventName == "rightMouseUp") {
-        _systemTray.popUpContextMenu();
+      if (eventName == kSystemTrayEventClick) {
+        Platform.isWindows ? _appWindow.show() : _systemTray.popUpContextMenu();
+      } else if (eventName == kSystemTrayEventRightClick) {
+        Platform.isWindows ? _systemTray.popUpContextMenu() : _appWindow.show();
       }
     });
   }

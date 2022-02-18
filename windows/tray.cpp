@@ -11,11 +11,9 @@ constexpr const wchar_t kTrayWindowClassName[] =
     L"FLUTTER_RUNNER_WIN32_WINDOW_TRAY";
 }
 
-const static char kSystemTrayEventLButtnUp[] = "leftMouseUp";
-const static char kSystemTrayEventLButtnDown[] = "leftMouseDown";
-const static char kSystemTrayEventLButtonDblClk[] = "leftMouseDblClk";
-const static char kSystemTrayEventRButtnUp[] = "rightMouseUp";
-const static char kSystemTrayEventRButtnDown[] = "rightMouseDown";
+const static char kSystemTrayEventClick[] = "click";
+const static char kSystemTrayEventRightClick[] = "right-click";
+const static char kSystemTrayEventDoubleClick[] = "double-click";
 
 // Converts the given UTF-8 string to UTF-16.
 static std::wstring Utf16FromUtf8(const std::string& utf8_string) {
@@ -217,28 +215,22 @@ std::optional<LRESULT> SystemTray::OnTrayIconCallback(UINT id,
   do {
     switch (notifyMsg) {
       case WM_LBUTTONDOWN: {
-        if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtnDown);
-        }
       } break;
       case WM_LBUTTONUP: {
         if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtnUp);
+          delegate_->OnSystemTrayEventCallback(kSystemTrayEventClick);
         }
       } break;
       case WM_LBUTTONDBLCLK: {
         if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtonDblClk);
+          delegate_->OnSystemTrayEventCallback(kSystemTrayEventDoubleClick);
         }
       } break;
       case WM_RBUTTONDOWN: {
-        if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventRButtnDown);
-        }
       } break;
       case WM_RBUTTONUP: {
         if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventRButtnUp);
+          delegate_->OnSystemTrayEventCallback(kSystemTrayEventRightClick);
         }
       } break;
         // default: {

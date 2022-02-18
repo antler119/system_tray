@@ -39,9 +39,11 @@ const static char kToolTipKey[] = "tooltip";
 const static char kIdKey[] = "id";
 const static char kTypeKey[] = "type";
 const static char kLabelKey[] = "label";
+const static char kCheckboxKey[] = "checkbox";
 const static char kSeparatorKey[] = "separator";
 const static char kSubMenuKey[] = "submenu";
 const static char kEnabledKey[] = "enabled";
+const static char kCheckedKey[] = "checked";
 
 const static char kChannelAppWindowName[] = "flutter/system_tray/app_window";
 
@@ -373,6 +375,24 @@ bool SystemTrayPlugin::valueToMenuItem(
     }
 
     AppendMenu(menu, flags, item_id, label_u.c_str());
+
+    const auto* checked =
+        std::get_if<bool>(ValueOrNull(representation, kCheckedKey));
+    bool bchecked = checked ? *checked : false;
+
+    if (type->compare(kCheckboxKey) == 0) {
+      // SetMenuItemBitmaps(menu, static_cast<UINT>(item_id), MF_BYCOMMAND,
+      //                    nullptr, nullptr);
+      // CheckMenuItem(menu, static_cast<UINT>(item_id),
+      //               (bchecked ? MF_CHECKED : MF_UNCHECKED));
+
+      MENUITEMINFO mii = {sizeof(MENUITEMINFO)};
+      mii.fMask = MIIM_CHECKMARKS | MIIM_STATE | MIIM_BITMAP;
+      mii.fState = (bchecked ? MFS_CHECKED : MFS_UNCHECKED);
+      mii.hbmpItem = static_cast<HBITMAP>(
+          LoadImage(nullptr, LR"()", IMAGE_BITMAP, 32, 32, LR_LOADFROMFILE));
+      SetMenuItemInfo(menu, static_cast<UINT>(item_id), FALSE, &mii);
+    }
   }
 
   return true;

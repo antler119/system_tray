@@ -5,10 +5,9 @@ let kDefaultSizeHeight = 18
 
 let kSystemTrayEventCallbackMethod = "SystemTrayEventCallback"
 
-let kSystemTrayEventLButtnUp = "leftMouseUp"
-let kSystemTrayEventLButtnDown = "leftMouseDown"
-let kSystemTrayEventRButtnUp = "rightMouseUp"
-let kSystemTrayEventRButtnDown = "rightMouseDown"
+let kSystemTrayEventClick = "click"
+let kSystemTrayEventRightClick = "right-click"
+let kSystemTrayEventDoubleClick = "double-click"
 
 class SystemTray: NSObject, NSMenuDelegate {
   var statusItem: NSStatusItem?
@@ -27,13 +26,9 @@ class SystemTray: NSObject, NSMenuDelegate {
     if let event = NSApp.currentEvent {
       switch event.type {
       case .leftMouseUp:
-        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventLButtnUp)
-      case .leftMouseDown:
-        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventLButtnDown)
+        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventClick)
       case .rightMouseUp:
-        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventRButtnUp)
-      case .rightMouseDown:
-        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventRButtnDown)
+        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventRightClick)
       default:
         break
       }

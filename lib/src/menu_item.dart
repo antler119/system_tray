@@ -4,30 +4,60 @@ typedef MenuItemSelectedCallback = void Function();
 /// The base type for an individual menu item that can be shown in a menu.
 abstract class MenuItemBase {
   /// Creates a new menu item with the give label.
-  const MenuItemBase(this.type, this.label);
+  MenuItemBase(this.type, this.label);
 
   /// The displayed label for the menu item.
   final String type;
-  final String label;
+  String label;
 }
 
 /// A standard menu item, with no submenus.
-class MenuItem extends MenuItemBase {
+class MenuItemCallbackBase extends MenuItemBase {
+  /// Creates a new menu item with the given [label] and options.
+  ///
+  /// Note that onClicked should generally be set unless [enabled] is false,
+  /// or the menu item will be selectable but not do anything.
+  MenuItemCallbackBase(
+    String type,
+    String label,
+    this.enabled,
+    this.onClicked,
+  ) : super(type, label);
+
+  /// Whether or not the menu item is enabled.
+  bool enabled;
+
+  /// The callback to call whenever the menu item is selected.
+  final MenuItemSelectedCallback? onClicked;
+}
+
+/// A standard menu item, with no submenus.
+class MenuItem extends MenuItemCallbackBase {
   /// Creates a new menu item with the given [label] and options.
   ///
   /// Note that onClicked should generally be set unless [enabled] is false,
   /// or the menu item will be selectable but not do anything.
   MenuItem({
     required String label,
-    this.enabled = true,
-    this.onClicked,
-  }) : super('lable', label);
+    bool enabled = true,
+    MenuItemSelectedCallback? onClicked,
+  }) : super('lable', label, enabled, onClicked);
+}
 
-  /// Whether or not the menu item is enabled.
-  final bool enabled;
+/// A menu item that serves as a checkbox.
+class MenuCheckbox extends MenuItemCallbackBase {
+  /// Creates a new menu checkbox with the given [label] and options.
+  ///
+  /// Note that onClicked should generally be set unless [enabled] is false,
+  /// or the menu checkbox will be selectable but not do anything.
+  MenuCheckbox({
+    required String label,
+    bool enabled = true,
+    this.checked = false,
+    MenuItemSelectedCallback? onClicked,
+  }) : super('checkbox', label, enabled, onClicked);
 
-  /// The callback to call whenever the menu item is selected.
-  final MenuItemSelectedCallback? onClicked;
+  bool checked;
 }
 
 /// A menu item continaing a submenu.

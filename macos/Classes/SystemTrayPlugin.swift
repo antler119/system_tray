@@ -18,9 +18,11 @@ let kToolTipKey = "tooltip"
 let kIdKey = "id"
 let kTypeKey = "type"
 let kLabelKey = "label"
+let kCheckboxKey = "checkbox"
 let kSeparatorKey = "separator"
 let kSubMenuKey = "submenu"
 let kEnabledKey = "enabled"
+let kCheckedKey = "checked"
 
 let kChannelAppWindowName = "flutter/system_tray/app_window"
 
@@ -125,6 +127,16 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
         menuItem.submenu = subMenu
         menu.addItem(menuItem)
       }
+    case kCheckboxKey:
+      let isChecked = item[kCheckedKey] as? Bool ?? false
+
+      let menuItem = NSMenuItem()
+      menuItem.title = label
+      menuItem.target = self
+      menuItem.action = isEnabled ? #selector(onMenuItemSelectedCallback) : nil
+      menuItem.tag = id
+      menuItem.state = isChecked ? .on : .off
+      menu.addItem(menuItem)
     default:
       let menuItem = NSMenuItem()
       menuItem.title = label
