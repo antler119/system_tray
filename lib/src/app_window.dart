@@ -9,6 +9,7 @@ const String _kShowAppWindow = "ShowAppWindow";
 const String _kHideAppWindow = "HideAppWindow";
 const String _kCloseAppWindow = "CloseAppWindow";
 
+/// Representation of native window
 class AppWindow {
   AppWindow() {
     _platformChannel.setMethodCallHandler(_callbackHandler);
@@ -17,14 +18,17 @@ class AppWindow {
 
   static const MethodChannel _platformChannel = MethodChannel(_kChannelName);
 
+  /// Show native window
   Future<void> show() async {
     await _platformChannel.invokeMethod(_kShowAppWindow);
   }
 
+  /// Hide native window
   Future<void> hide() async {
     await _platformChannel.invokeMethod(_kHideAppWindow);
   }
 
+  /// Close native window
   Future<void> close() async {
     await _platformChannel.invokeMethod(_kCloseAppWindow);
   }

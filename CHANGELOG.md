@@ -1,3 +1,8 @@
+## 0.1.0
+
+* [Feature] add some helper functions (setImage / setTooltip / setTitle / getTitle)
+* [Fixed] enable change icon image on macOS
+
 ## 0.0.9
 
 * [Feature] add popUpContextMenu

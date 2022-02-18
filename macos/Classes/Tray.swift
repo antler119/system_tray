@@ -52,19 +52,22 @@ class SystemTray: NSObject, NSMenuDelegate {
     if let toolTip = toolTip {
       statusItem?.button?.toolTip = toolTip
     }
+
     if let title = title {
       statusItem?.button?.title = title
     }
 
     if let base64Icon = base64Icon {
       if let imageData = Data(base64Encoded: base64Icon, options: .ignoreUnknownCharacters),
-         let itemImage = NSImage(data: imageData) {
+        let itemImage = NSImage(data: imageData)
+      {
         let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
         itemImage.size = destSize
         statusItem?.button?.image = itemImage
         statusItem?.button?.imagePosition = NSControl.ImagePosition.imageLeft
       }
     }
+
     return true
   }
 
@@ -72,21 +75,24 @@ class SystemTray: NSObject, NSMenuDelegate {
     if let toolTip = toolTip {
       statusItem?.button?.toolTip = toolTip
     }
+
     if let title = title {
       statusItem?.button?.title = title
     }
+
     if let base64Icon = base64Icon {
       if let imageData = Data(base64Encoded: base64Icon, options: .ignoreUnknownCharacters),
-         let itemImage = NSImage(data: imageData) {
+        let itemImage = NSImage(data: imageData)
+      {
         let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
         itemImage.size = destSize
         statusItem?.button?.image = itemImage
         statusItem?.button?.imagePosition = NSControl.ImagePosition.imageLeft
-        return true
+      } else {
+        statusItem?.button?.image = nil
       }
     }
 
-    statusItem?.button?.image = nil
     return true
   }
 
@@ -103,5 +109,26 @@ class SystemTray: NSObject, NSMenuDelegate {
       return true
     }
     return false
+  }
+
+  func setPressedImage(base64Icon: String?) {
+    if let base64Icon = base64Icon {
+      if let imageData = Data(base64Encoded: base64Icon, options: .ignoreUnknownCharacters),
+        let itemImage = NSImage(data: imageData)
+      {
+        let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
+        itemImage.size = destSize
+        statusItem?.button?.alternateImage = itemImage
+        statusItem?.button?.setButtonType(.toggle)
+      } else {
+        statusItem?.button?.alternateImage = nil
+      }
+    } else {
+      statusItem?.button?.alternateImage = nil
+    }
+  }
+
+  func getTitle() -> String {
+    return statusItem?.button?.title ?? ""
   }
 }
