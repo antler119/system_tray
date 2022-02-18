@@ -9,7 +9,7 @@ In the pubspec.yaml of your flutter project, add the following dependency:
 ```yaml
 dependencies:
   ...
-  system_tray: ^0.0.9
+  system_tray: ^0.1.0
 ```
 
 In your library add the following import:
@@ -78,6 +78,27 @@ sudo apt-get install appindicator3-0.1 libappindicator3-dev
         </td>
     </tr>
     <tr>
+        <td>setImage</td>
+        <td>Modify the tray image</td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>✔️</td>
+    </tr>
+    <tr>
+        <td>setTooltip</td>
+        <td>Modify the tray tooltip</td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>➖</td>
+    </tr>
+    <tr>
+        <td>setTitle / getTitle</td>
+        <td>Set / Get the tray title</td>
+        <td>➖</td>
+        <td>✔️</td>
+        <td>➖</td>
+    </tr>
+    <tr>
         <td>setContextMenu</td>
         <td>Set the tray context menu</td>
         <td>✔️</td>
@@ -116,7 +137,6 @@ sudo apt-get install appindicator3-0.1 libappindicator3-dev
 </table>
 
 ## Usage
-Smallest example:
 
 ```dart
 Future<void> initSystemTray() async {
@@ -133,116 +153,6 @@ Future<void> initSystemTray() async {
   await _systemTray.initSystemTray(
     title: "system tray",
     iconPath: path,
-  );
-
-  await _systemTray.setContextMenu(menu);
-
-  // handle system tray event
-  _systemTray.registerSystemTrayEventHandler((eventName) {
-    debugPrint("eventName: $eventName");
-    if (eventName == "leftMouseDown") {
-    } else if (eventName == "leftMouseUp") {
-      _systemTray.popUpContextMenu();
-    } else if (eventName == "rightMouseDown") {
-    } else if (eventName == "rightMouseUp") {
-      _appWindow.show();
-    }
-  });
-}
-```
-
-Flashing icon example:
-
-```dart
-Future<void> initSystemTray() async {
-  String path =
-      Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
-
-  final menu = [
-    MenuItem(label: 'Show', onClicked: _appWindow.show),
-    MenuItem(label: 'Hide', onClicked: _appWindow.hide),
-    MenuItem(
-      label: 'Start flash tray icon',
-      onClicked: () {
-        debugPrint("Start flash tray icon");
-
-        _timer ??= Timer.periodic(
-          const Duration(milliseconds: 500),
-          (timer) {
-            _toogleTrayIcon = !_toogleTrayIcon;
-            _systemTray.setSystemTrayInfo(
-              iconPath: _toogleTrayIcon ? "" : path,
-            );
-          },
-        );
-      },
-    ),
-    MenuItem(
-      label: 'Stop flash tray icon',
-      onClicked: () {
-        debugPrint("Stop flash tray icon");
-
-        _timer?.cancel();
-        _timer = null;
-
-        _systemTray.setSystemTrayInfo(
-          iconPath: path,
-        );
-      },
-    ),
-    MenuSeparator(),
-    SubMenu(
-      label: "Test API",
-      children: [
-        SubMenu(
-          label: "setSystemTrayInfo",
-          children: [
-            MenuItem(
-              label: 'set title',
-              onClicked: () {
-                final String text = WordPair.random().asPascalCase;
-                debugPrint("click 'set title' : $text");
-                _systemTray.setSystemTrayInfo(
-                  title: text,
-                );
-              },
-            ),
-            MenuItem(
-              label: 'set icon path',
-              onClicked: () {
-                debugPrint("click 'set icon path' : $path");
-                _systemTray.setSystemTrayInfo(
-                  iconPath: path,
-                );
-              },
-            ),
-            MenuItem(
-              label: 'set tooltip',
-              onClicked: () {
-                final String text = WordPair.random().asPascalCase;
-                debugPrint("click 'set tooltip' : $text");
-                _systemTray.setSystemTrayInfo(
-                  toolTip: text,
-                );
-              },
-            ),
-          ],
-        ),
-        MenuItem(label: 'disabled Item', enabled: false),
-      ],
-    ),
-    MenuSeparator(),
-    MenuItem(
-      label: 'Exit',
-      onClicked: _appWindow.close,
-    ),
-  ];
-
-  // We first init the systray menu and then add the menu entries
-  await _systemTray.initSystemTray(
-    title: "system tray",
-    iconPath: path,
-    toolTip: "How to use system tray with Flutter",
   );
 
   await _systemTray.setContextMenu(menu);

@@ -16,7 +16,7 @@
 bool SystemTray::init_system_tray(const char* title,
                                   const char* iconPath,
                                   const char* toolTip) {
-  printf("SystemTray::init_system_tray\n");
+  // printf("SystemTray::init_system_tray\n");
 
   bool ret = false;
 
@@ -104,8 +104,8 @@ bool SystemTray::init_indicator_api() {
 bool SystemTray::create_indicator(const char* title,
                                   const char* iconPath,
                                   const char* toolTip) {
-  printf("SystemTray::create_indicator title: %s, iconPath: %s, toolTip: %s\n",
-         title, iconPath, toolTip);
+  // printf("SystemTray::create_indicator title: %s, iconPath: %s, toolTip: %s\n",
+  //        title, iconPath, toolTip);
 
   bool ret = false;
 
@@ -121,7 +121,7 @@ bool SystemTray::create_indicator(const char* title,
 }
 
 bool SystemTray::set_context_menu(GtkWidget* system_menu) {
-  printf("SystemTray::set_context_menu system_menu:%p\n", system_menu);
+  // printf("SystemTray::set_context_menu system_menu:%p\n", system_menu);
 
   bool ret = false;
 

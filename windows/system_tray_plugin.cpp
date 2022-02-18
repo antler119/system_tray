@@ -220,7 +220,7 @@ SystemTrayPlugin::~SystemTrayPlugin() {
 void SystemTrayPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  printf("method call %s\n", method_call.method_name().c_str());
+  // printf("method call %s\n", method_call.method_name().c_str());
 
   if (method_call.method_name().compare(kInitSystemTray) == 0) {
     initSystemTray(method_call, *result);

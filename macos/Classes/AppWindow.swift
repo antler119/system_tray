@@ -10,7 +10,7 @@ class AppWindow: NSObject {
   }
 
   func showAppWindow() {
-    print("showAppWindow title:\(self.window.title) rect:\(self.window.contentLayoutRect)")
+    // print("showAppWindow title:\(self.window.title) rect:\(self.window.contentLayoutRect)")
     DispatchQueue.main.async {
       if self.window.isMiniaturized == true {
         self.window.deminiaturize(self)
@@ -23,14 +23,14 @@ class AppWindow: NSObject {
   }
 
   func hideAppWindow() {
-    print("hideAppWindow")
+    // print("hideAppWindow")
     DispatchQueue.main.async {
       self.window.miniaturize(self)
     }
   }
 
   func closeAppWindow() {
-    print("closeAppWindow")
+    // print("closeAppWindow")
     self.window.performClose(self)
   }
 }

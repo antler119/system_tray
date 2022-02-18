@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,13 +14,13 @@ const String _kInitSystemTray = "InitSystemTray";
 const String _kSetSystemTrayInfo = "SetSystemTrayInfo";
 const String _kSetContextMenu = "SetContextMenu";
 const String _kPopupContextMenu = "PopupContextMenu";
+const String _kGetTitle = "GetTitle";
 
 const String _kMenuItemSelectedCallbackMethod = 'MenuItemSelectedCallback';
 const String _kSystemTrayEventCallbackMethod = 'SystemTrayEventCallback';
 
 const String _kTitleKey = "title";
 const String _kIconPathKey = "iconpath";
-const String _kbase64IconKey = "base64icon";
 const String _kToolTipKey = "tooltip";
 const String _kIdKey = 'id';
 const String _kTypeKey = 'type';
@@ -33,6 +31,7 @@ const String _kEnabledKey = 'enabled';
 /// A callback provided to [SystemTray] to handle system tray click event.
 typedef SystemTrayEventCallback = void Function(String eventName);
 
+/// Representation of system tray
 class SystemTray {
   SystemTray() {
     _platformChannel.setMethodCallHandler(_callbackHandler);
@@ -67,8 +66,7 @@ class SystemTray {
       _kInitSystemTray,
       <String, dynamic>{
         _kTitleKey: title,
-        _kIconPathKey: _joinIconPath(iconPath),
-        _kbase64IconKey: await _base64Image(iconPath),
+        _kIconPathKey: await _getIcon(iconPath),
         _kToolTipKey: toolTip,
       },
     );
@@ -85,22 +83,31 @@ class SystemTray {
       _kSetSystemTrayInfo,
       <String, dynamic>{
         _kTitleKey: title,
-        _kIconPathKey: iconPath == null ? null : _joinIconPath(iconPath),
-        _kbase64IconKey: await _base64Image(iconPath),
+        _kIconPathKey: iconPath == null ? null : await _getIcon(iconPath),
         _kToolTipKey: toolTip,
       },
     );
     return value;
   }
 
-  /// Returns Base64 Image
-  Future<String?> _base64Image(String? iconPath) async {
-    if (iconPath?.isNotEmpty != true) {
-      return null;
-    }
+  /// (Windows\macOS\Linux) Sets the image associated with this tray icon
+  Future<void> setImage(String image) async {
+    await setSystemTrayInfo(iconPath: image);
+  }
 
-    ByteData imageData = await rootBundle.load(iconPath!);
-    return base64Encode(imageData.buffer.asUint8List());
+  /// (Windows\macOS) Sets the hover text for this tray icon.
+  Future<void> setToolTip(String toolTip) async {
+    await setSystemTrayInfo(toolTip: toolTip);
+  }
+
+  /// (macOS) Sets the title displayed next to the tray icon in the status bar.
+  Future<void> setTitle(String title) async {
+    await setSystemTrayInfo(title: title);
+  }
+
+  /// (macOS) Returns string - the title displayed next to the tray icon in the status bar
+  Future<String> getTitle() async {
+    return await _platformChannel.invokeMethod(_kGetTitle);
   }
 
   /// register listener for system tray event.
@@ -227,9 +234,14 @@ class SystemTray {
     }
   }
 
-  String _joinIconPath(String assetPath) {
+  /// Get Icon
+  Future<String> _getIcon(String assetPath) async {
+    if (assetPath.isEmpty == true) {
+      return '';
+    }
+
     if (Platform.isMacOS) {
-      return joinAll([assetPath]);
+      return await _base64Image(assetPath);
     }
 
     return joinAll([
@@ -237,5 +249,11 @@ class SystemTray {
       'data/flutter_assets',
       assetPath,
     ]);
+  }
+
+  /// Returns Base64 Image
+  Future<String> _base64Image(String iconPath) async {
+    ByteData imageData = await rootBundle.load(iconPath);
+    return base64Encode(imageData.buffer.asUint8List());
   }
 }
