@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:english_words/english_words.dart';
@@ -51,6 +52,8 @@ class _MyAppState extends State<MyApp> {
     String path =
         Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
 
+    List<String> iconList = ['darts_icon', 'gift_icon'];
+
     final menu = [
       MenuItem(label: 'Show', onClicked: _appWindow.show),
       MenuItem(label: 'Hide', onClicked: _appWindow.hide),
@@ -63,9 +66,7 @@ class _MyAppState extends State<MyApp> {
             const Duration(milliseconds: 500),
             (timer) {
               _toogleTrayIcon = !_toogleTrayIcon;
-              _systemTray.setSystemTrayInfo(
-                iconPath: _toogleTrayIcon ? "" : path,
-              );
+              _systemTray.setImage(_toogleTrayIcon ? "" : path);
             },
           );
         },
@@ -78,9 +79,7 @@ class _MyAppState extends State<MyApp> {
           _timer?.cancel();
           _timer = null;
 
-          _systemTray.setSystemTrayInfo(
-            iconPath: path,
-          );
+          _systemTray.setImage(path);
         },
       ),
       MenuSeparator(),
@@ -91,32 +90,38 @@ class _MyAppState extends State<MyApp> {
             label: "setSystemTrayInfo",
             children: [
               MenuItem(
-                label: 'set title',
+                label: 'setTitle',
                 onClicked: () {
                   final String text = WordPair.random().asPascalCase;
-                  debugPrint("click 'set title' : $text");
-                  _systemTray.setSystemTrayInfo(
-                    title: text,
-                  );
+                  debugPrint("click 'setTitle' : $text");
+                  _systemTray.setTitle(text);
                 },
               ),
               MenuItem(
-                label: 'set icon path',
+                label: 'setImage',
                 onClicked: () {
-                  debugPrint("click 'set icon path' : $path");
-                  _systemTray.setSystemTrayInfo(
-                    iconPath: path,
-                  );
+                  String iconName = iconList[Random().nextInt(iconList.length)];
+                  String path = Platform.isWindows
+                      ? 'assets/$iconName.ico'
+                      : 'assets/$iconName.png';
+
+                  debugPrint("click 'setImage' : $path");
+                  _systemTray.setImage(path);
                 },
               ),
               MenuItem(
-                label: 'set toolTip',
+                label: 'setToolTip',
                 onClicked: () {
                   final String text = WordPair.random().asPascalCase;
-                  debugPrint("click 'set toolTip' : $text");
-                  _systemTray.setSystemTrayInfo(
-                    toolTip: text,
-                  );
+                  debugPrint("click 'setToolTip' : $text");
+                  _systemTray.setToolTip(text);
+                },
+              ),
+              MenuItem(
+                label: 'getTitle [macOS]',
+                onClicked: () async {
+                  String title = await _systemTray.getTitle();
+                  debugPrint("click 'getTitle' : $title");
                 },
               ),
             ],

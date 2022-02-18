@@ -7,11 +7,13 @@ let kInitSystemTray = "InitSystemTray"
 let kSetSystemTrayInfo = "SetSystemTrayInfo"
 let kSetContextMenu = "SetContextMenu"
 let kPopupContextMenu = "PopupContextMenu"
+let kSetPressedImage = "SetPressedImage"
+let kGetTitle = "GetTitle"
 
 let kMenuItemSelectedCallbackMethod = "MenuItemSelectedCallback"
 
 let kTitleKey = "title"
-let kBase64IconKey = "base64icon"
+let kIconPathKey = "iconpath"
 let kToolTipKey = "tooltip"
 let kIdKey = "id"
 let kTypeKey = "type"
@@ -47,8 +49,8 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
 
   init(
     _ registrar: FlutterPluginRegistrar, _ channel: FlutterMethodChannel,
-    _ channel_app_window: FlutterMethodChannel)
-  {
+    _ channel_app_window: FlutterMethodChannel
+  ) {
     system_tray = SystemTray(channel)
     self.channel = channel
     self.channel_app_window = channel_app_window
@@ -65,6 +67,10 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
       setContextMenu(call, result)
     case kPopupContextMenu:
       popUpContextMenu(call, result)
+    case kSetPressedImage:
+      setPressedImage(call, result)
+    case kGetTitle:
+      getTitle(call, result)
     case kInitAppWindow:
       initAppWindow(call, result)
     case kShowAppWindow:
@@ -81,18 +87,20 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
   func initSystemTray(_ call: FlutterMethodCall, _ result: FlutterResult) {
     let arguments = call.arguments as! [String: Any]
     let title = arguments[kTitleKey] as? String
-    let base64Icon = arguments[kBase64IconKey] as? String
+    let base64Icon = arguments[kIconPathKey] as? String
     let toolTip = arguments[kToolTipKey] as? String
-    result(system_tray?.initSystemTray(title: title, base64Icon: base64Icon, toolTip: toolTip) ?? false)
+    result(
+      system_tray?.initSystemTray(title: title, base64Icon: base64Icon, toolTip: toolTip) ?? false)
   }
 
   func setSystemTrayInfo(_ call: FlutterMethodCall, _ result: FlutterResult) {
     let arguments = call.arguments as! [String: Any]
     let title = arguments[kTitleKey] as? String
-    let base64Icon = arguments[kBase64IconKey] as? String
+    let base64Icon = arguments[kIconPathKey] as? String
     let toolTip = arguments[kToolTipKey] as? String
     result(
-      system_tray?.setSystemTrayInfo(title: title, base64Icon: base64Icon, toolTip: toolTip) ?? false)
+      system_tray?.setSystemTrayInfo(title: title, base64Icon: base64Icon, toolTip: toolTip)
+        ?? false)
   }
 
   func valueToMenuItem(menu: NSMenu, item: [String: Any]) -> Bool {
@@ -160,6 +168,16 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
 
   func popUpContextMenu(_ call: FlutterMethodCall, _ result: FlutterResult) {
     result(system_tray?.popUpContextMenu() ?? false)
+  }
+
+  func setPressedImage(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    let base64Icon = call.arguments as? String
+    system_tray?.setPressedImage(base64Icon: base64Icon)
+    result(nil)
+  }
+
+  func getTitle(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    result(system_tray?.getTitle() ?? "")
   }
 
   @objc func onMenuItemSelectedCallback(_ sender: Any) {

@@ -63,7 +63,7 @@ SystemTrayPlugin* g_plugin = nullptr;
 static void tray_callback(GtkMenuItem* item, gpointer user_data) {
   int64_t id = GPOINTER_TO_INT(user_data);
 
-  g_print("tray_callback id:%ld\n", id);
+  // g_print("tray_callback id:%ld\n", id);
 
   g_autoptr(FlValue) result = fl_value_new_int(id);
   fl_method_channel_invoke_method(g_plugin->channel,
@@ -424,7 +424,7 @@ static void system_tray_plugin_handle_method_call(SystemTrayPlugin* self,
 
 static void system_tray_plugin_dispose(GObject* object) {
   SystemTrayPlugin* self = SYSTEM_TRAY_PLUGIN(object);
-  g_print("system_tray_plugin_dispose self: %p\n", self);
+  // g_print("system_tray_plugin_dispose self: %p\n", self);
 
   g_clear_object(&self->registrar);
   g_clear_object(&self->channel);
@@ -433,12 +433,12 @@ static void system_tray_plugin_dispose(GObject* object) {
 }
 
 static void system_tray_plugin_class_init(SystemTrayPluginClass* klass) {
-  g_print("system_tray_plugin_class_init klass: %p\n", klass);
+  // g_print("system_tray_plugin_class_init klass: %p\n", klass);
   G_OBJECT_CLASS(klass)->dispose = system_tray_plugin_dispose;
 }
 
 static void system_tray_plugin_init(SystemTrayPlugin* self) {
-  g_print("system_tray_plugin_init self: %p\n", self);
+  // g_print("system_tray_plugin_init self: %p\n", self);
   g_plugin = self;
 }
 
