@@ -32,7 +32,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final SystemTray _systemTray = SystemTray();
   final AppWindow _appWindow = AppWindow();
-  late List<MenuItemBase> _trayMenu;
+  late List<MenuItem> _trayMenu;
 
   Timer? _timer;
   bool _toogleTrayIcon = true;
@@ -56,9 +56,9 @@ class _MyAppState extends State<MyApp> {
     List<String> iconList = ['darts_icon', 'gift_icon'];
 
     _trayMenu = [
-      MenuItem(label: 'Show', onClicked: _appWindow.show),
-      MenuItem(label: 'Hide', onClicked: _appWindow.hide),
-      MenuItem(
+      MenuItemLable(label: 'Show', onClicked: _appWindow.show),
+      MenuItemLable(label: 'Hide', onClicked: _appWindow.hide),
+      MenuItemLable(
         label: 'Start flash tray icon',
         onClicked: () {
           debugPrint("Start flash tray icon");
@@ -72,7 +72,7 @@ class _MyAppState extends State<MyApp> {
           );
         },
       ),
-      MenuItem(
+      MenuItemLable(
         label: 'Stop flash tray icon',
         onClicked: () {
           debugPrint("Stop flash tray icon");
@@ -90,7 +90,7 @@ class _MyAppState extends State<MyApp> {
           SubMenu(
             label: "setSystemTrayInfo",
             children: [
-              MenuItem(
+              MenuItemLable(
                 label: 'setTitle',
                 onClicked: () {
                   final String text = WordPair.random().asPascalCase;
@@ -98,7 +98,7 @@ class _MyAppState extends State<MyApp> {
                   _systemTray.setTitle(text);
                 },
               ),
-              MenuItem(
+              MenuItemLable(
                 label: 'setImage',
                 onClicked: () {
                   String iconName = iconList[Random().nextInt(iconList.length)];
@@ -110,7 +110,7 @@ class _MyAppState extends State<MyApp> {
                   _systemTray.setImage(path);
                 },
               ),
-              MenuItem(
+              MenuItemLable(
                 label: 'setToolTip',
                 onClicked: () {
                   final String text = WordPair.random().asPascalCase;
@@ -118,7 +118,7 @@ class _MyAppState extends State<MyApp> {
                   _systemTray.setToolTip(text);
                 },
               ),
-              MenuItem(
+              MenuItemLable(
                 label: 'getTitle [macOS]',
                 onClicked: () async {
                   String title = await _systemTray.getTitle();
@@ -127,37 +127,37 @@ class _MyAppState extends State<MyApp> {
               ),
             ],
           ),
-          MenuItem(label: 'disabled Item', enabled: false),
+          MenuItemLable(label: 'disabled Item', enabled: false),
         ],
       ),
       MenuSeparator(),
-      MenuCheckbox(
+      MenuItemCheckbox(
         label: 'Checkbox 1',
         checked: true,
         onClicked: () {
           debugPrint("click 'Checkbox 1'");
         },
       ),
-      MenuCheckbox(
+      MenuItemCheckbox(
         label: 'Checkbox 2',
         onClicked: () {
           debugPrint("click 'Checkbox 2'");
         },
       ),
-      MenuCheckbox(
+      MenuItemCheckbox(
         label: 'Checkbox 3',
         checked: true,
         onClicked: () {
           debugPrint("click 'Checkbox 3'");
 
-          (_trayMenu.elementAt(9) as MenuCheckbox).checked =
-              !(_trayMenu.elementAt(9) as MenuCheckbox).checked;
+          (_trayMenu.elementAt(9) as MenuItemCheckbox).checked =
+              !(_trayMenu.elementAt(9) as MenuItemCheckbox).checked;
 
           _systemTray.setContextMenu(_trayMenu);
         },
       ),
       MenuSeparator(),
-      MenuItem(
+      MenuItemLable(
         label: 'Exit',
         onClicked: _appWindow.close,
       ),

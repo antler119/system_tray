@@ -121,7 +121,7 @@ class SystemTray {
   /// How exactly this is handled is subject to platform interpretation.
   /// For instance, special menus that are handled entirely on the native
   /// side might be added to the provided menus.
-  Future<void> setContextMenu(List<MenuItemBase> menus) async {
+  Future<void> setContextMenu(List<MenuItem> menus) async {
     try {
       _updateInProgress = true;
       await _platformChannel.invokeMethod(
@@ -144,7 +144,7 @@ class SystemTray {
   /// As a side-effect, repopulates _selectionCallbacks with a mapping from
   /// the IDs assigned to any menu item with a selection handler to the
   /// callback that should be triggered.
-  List<dynamic> _channelRepresentationForMenus(List<MenuItemBase> menus) {
+  List<dynamic> _channelRepresentationForMenus(List<MenuItem> menus) {
     _selectionCallbacks.clear();
     _nextMenuItemId = 1;
 
@@ -153,7 +153,7 @@ class SystemTray {
 
   /// Returns a representation of [item] suitable for passing over the
   /// platform channel to the native plugin.
-  Map<String, dynamic> _channelRepresentationForMenuItem(MenuItemBase item) {
+  Map<String, dynamic> _channelRepresentationForMenuItem(MenuItem item) {
     final representation = <String, dynamic>{};
     if (item is MenuSeparator) {
       representation[_kTypeKey] = item.type;
@@ -163,14 +163,14 @@ class SystemTray {
         representation[_kTypeKey] = item.type;
         representation[_kSubMenuKey] =
             _channelRepresentationForMenu(item.children);
-      } else if (item is MenuItem) {
+      } else if (item is MenuItemLable) {
         representation[_kTypeKey] = item.type;
         final handler = item.onClicked;
         if (handler != null) {
           representation[_kIdKey] = _storeMenuCallback(handler);
         }
         representation[_kEnabledKey] = item.enabled;
-      } else if (item is MenuCheckbox) {
+      } else if (item is MenuItemCheckbox) {
         representation[_kTypeKey] = item.type;
         final handler = item.onClicked;
         if (handler != null) {
@@ -188,7 +188,7 @@ class SystemTray {
 
   /// Returns the representation of [menu] suitable for passing over the
   /// platform channel to the native plugin.
-  List<dynamic> _channelRepresentationForMenu(List<MenuItemBase> menu) {
+  List<dynamic> _channelRepresentationForMenu(List<MenuItem> menu) {
     final menuItemRepresentations = [];
     // Dividers are only allowed after non-divider items (see ApplicationMenu).
     var skipNextDivider = true;

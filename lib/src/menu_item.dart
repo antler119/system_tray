@@ -2,9 +2,9 @@
 typedef MenuItemSelectedCallback = void Function();
 
 /// The base type for an individual menu item that can be shown in a menu.
-abstract class MenuItemBase {
+abstract class MenuItem {
   /// Creates a new menu item with the give label.
-  MenuItemBase(this.type, this.label);
+  MenuItem(this.type, this.label);
 
   /// The displayed label for the menu item.
   final String type;
@@ -12,12 +12,12 @@ abstract class MenuItemBase {
 }
 
 /// A standard menu item, with no submenus.
-class MenuItemCallbackBase extends MenuItemBase {
+class MenuItemWithCallback extends MenuItem {
   /// Creates a new menu item with the given [label] and options.
   ///
   /// Note that onClicked should generally be set unless [enabled] is false,
   /// or the menu item will be selectable but not do anything.
-  MenuItemCallbackBase(
+  MenuItemWithCallback(
     String type,
     String label,
     this.enabled,
@@ -32,12 +32,12 @@ class MenuItemCallbackBase extends MenuItemBase {
 }
 
 /// A standard menu item, with no submenus.
-class MenuItem extends MenuItemCallbackBase {
+class MenuItemLable extends MenuItemWithCallback {
   /// Creates a new menu item with the given [label] and options.
   ///
   /// Note that onClicked should generally be set unless [enabled] is false,
   /// or the menu item will be selectable but not do anything.
-  MenuItem({
+  MenuItemLable({
     required String label,
     bool enabled = true,
     MenuItemSelectedCallback? onClicked,
@@ -45,12 +45,12 @@ class MenuItem extends MenuItemCallbackBase {
 }
 
 /// A menu item that serves as a checkbox.
-class MenuCheckbox extends MenuItemCallbackBase {
+class MenuItemCheckbox extends MenuItemWithCallback {
   /// Creates a new menu checkbox with the given [label] and options.
   ///
   /// Note that onClicked should generally be set unless [enabled] is false,
   /// or the menu checkbox will be selectable but not do anything.
-  MenuCheckbox({
+  MenuItemCheckbox({
     required String label,
     bool enabled = true,
     this.checked = false,
@@ -63,17 +63,17 @@ class MenuCheckbox extends MenuItemCallbackBase {
 /// A menu item continaing a submenu.
 ///
 /// The item itself can't be selected, it just displays the submenu.
-class SubMenu extends MenuItemBase {
+class SubMenu extends MenuItem {
   /// Creates a new submenu with the given [label] and [children].
   SubMenu({required String label, required this.children})
       : super('submenu', label);
 
   /// The menu items contained in the submenu.
-  final List<MenuItemBase> children;
+  final List<MenuItem> children;
 }
 
 /// A menu item that serves as a separator, generally drawn as a line.
-class MenuSeparator extends MenuItemBase {
+class MenuSeparator extends MenuItem {
   /// Creates a new separator item.
   MenuSeparator() : super('separator', '');
 }
