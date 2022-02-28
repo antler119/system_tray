@@ -1,9 +1,11 @@
 # system_tray
+
 [![Pub](https://img.shields.io/pub/v/system_tray.svg)](https://pub.dartlang.org/packages/system_tray)
 
-A [Flutter package](https://github.com/antler119/system_tray.git) that that enables support for system tray menu for desktop flutter apps. **on Windows, macOS and Linux**.
+A [Flutter package](https://github.com/antler119/system_tray.git) that enables support for system tray menu for desktop flutter apps. **on Windows, macOS, and Linux**.
 
 ## Install
+
 In the pubspec.yaml of your flutter project, add the following dependency:
 
 ```yaml
@@ -21,11 +23,13 @@ import 'package:system_tray/system_tray.dart';
 ## Prerequisite
 
 ### Linux
+
 ```bash
 sudo apt-get install appindicator3-0.1 libappindicator3-dev
 ```
 
 ## Example App
+
 ### Windows
 
 <img src="https://raw.githubusercontent.com/antler119/system_tray/master/resources/screenshot_windows.png">
@@ -171,22 +175,26 @@ Future<void> initSystemTray() async {
 }
 ```
 
-# Addition
+## Additional Resources
 
 Recommended library that supports window control:
 
 - [bitsdojo_window](https://pub.dev/packages/bitsdojo_window)
 - [window_size (Google)](https://github.com/google/flutter-desktop-embedding/tree/master/plugins/window_size)
 
-# Q&A
+## Q&A
+
 1. Q: If you encounter the following compilation error
-    ``` C++
-    Undefined symbols for architecture x86_64:
-      "___gxx_personality_v0", referenced from:
-          ...
-    ```
-    A: add **libc++.tbd**
-      ``` bash
-      1. open example/macos/Runner.xcodeproj
-      2. add 'libc++.tbd' to TARGET runner 'Link Binary With Libraries' 
-      ```
+
+   ```C++
+   Undefined symbols for architecture x86_64:
+     "___gxx_personality_v0", referenced from:
+         ...
+   ```
+
+   A: add **libc++.tbd**
+
+   ```bash
+   1. open example/macos/Runner.xcodeproj
+   2. add 'libc++.tbd' to TARGET runner 'Link Binary With Libraries'
+   ```
