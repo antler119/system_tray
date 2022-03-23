@@ -181,6 +181,7 @@ Recommended library that supports window control:
 
 - [bitsdojo_window](https://pub.dev/packages/bitsdojo_window)
 - [window_size (Google)](https://github.com/google/flutter-desktop-embedding/tree/master/plugins/window_size)
+- [window_manager](https://pub.dev/packages/window_manager)
 
 ## Q&A
 
