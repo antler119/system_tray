@@ -1,3 +1,7 @@
+## 0.1.1
+
+* [Fixed] support flutter 3.0
+  
 ## 0.1.0
 
 * [Feature] add some helper functions (setImage / setTooltip / setTitle / getTitle)
