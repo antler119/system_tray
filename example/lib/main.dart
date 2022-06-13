@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:english_words/english_words.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide MenuItem;
 import 'package:system_tray/system_tray.dart';
 
 void main() async {
