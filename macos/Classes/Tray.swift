@@ -1,22 +1,64 @@
 import FlutterMacOS
 
-let kDefaultSizeWidth = 18
-let kDefaultSizeHeight = 18
+let kInitSystemTray = "InitSystemTray"
+let kSetSystemTrayInfo = "SetSystemTrayInfo"
+let kSetContextMenu = "SetContextMenu"
+let kPopupContextMenu = "PopupContextMenu"
+let kSetPressedImage = "SetPressedImage"
+let kGetTitle = "GetTitle"
+let kDestroySystemTray = "DestroySystemTray"
 
-let kSystemTrayEventCallbackMethod = "SystemTrayEventCallback"
+private let kDefaultSizeWidth = 18
+private let kDefaultSizeHeight = 18
 
-let kSystemTrayEventLButtnUp = "leftMouseUp"
-let kSystemTrayEventLButtnDown = "leftMouseDown"
-let kSystemTrayEventRButtnUp = "rightMouseUp"
-let kSystemTrayEventRButtnDown = "rightMouseDown"
+private let kTitleKey = "title"
+private let kIconPathKey = "iconpath"
+private let kToolTipKey = "tooltip"
 
-class SystemTray: NSObject, NSMenuDelegate {
-  var statusItem: NSStatusItem?
-  var statusItemMenu: NSMenu?
+private let kSystemTrayEventClick = "click"
+private let kSystemTrayEventRightClick = "right-click"
+private let kSystemTrayEventDoubleClick = "double-click"
+
+private let kSystemTrayEventCallbackMethod = "SystemTrayEventCallback"
+
+class Tray: NSObject, NSMenuDelegate {
+  var registrar: FlutterPluginRegistrar
   var channel: FlutterMethodChannel
 
-  init(_ channel: FlutterMethodChannel) {
+  weak var menuManager: MenuManager?
+
+  var statusItem: NSStatusItem?
+
+  var contextMenuId: Int?
+
+  init(
+    _ registrar: FlutterPluginRegistrar, _ channel: FlutterMethodChannel,
+    _ menuManager: MenuManager?
+  ) {
+    self.registrar = registrar
     self.channel = channel
+    self.menuManager = menuManager
+  }
+
+  func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    switch call.method {
+    case kInitSystemTray:
+      initSystemTray(call, result)
+    case kSetSystemTrayInfo:
+      setTrayInfo(call, result)
+    case kSetContextMenu:
+      setContextMenu(call, result)
+    case kPopupContextMenu:
+      popUpContextMenu(call, result)
+    case kSetPressedImage:
+      setPressedImage(call, result)
+    case kGetTitle:
+      getTitle(call, result)
+    case kDestroySystemTray:
+      destroySystemTray(call, result)
+    default:
+      result(FlutterMethodNotImplemented)
+    }
   }
 
   func menuDidClose(_ menu: NSMenu) {
@@ -27,20 +69,26 @@ class SystemTray: NSObject, NSMenuDelegate {
     if let event = NSApp.currentEvent {
       switch event.type {
       case .leftMouseUp:
-        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventLButtnUp)
-      case .leftMouseDown:
-        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventLButtnDown)
+        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventClick)
       case .rightMouseUp:
-        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventRButtnUp)
-      case .rightMouseDown:
-        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventRButtnDown)
+        channel.invokeMethod(kSystemTrayEventCallbackMethod, arguments: kSystemTrayEventRightClick)
       default:
         break
       }
     }
   }
 
-  func initSystemTray(title: String?, base64Icon: String?, toolTip: String?) -> Bool {
+  func initSystemTray(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    let arguments = call.arguments as! [String: Any]
+    let title = arguments[kTitleKey] as? String
+    let base64Icon = arguments[kIconPathKey] as? String
+    let toolTip = arguments[kToolTipKey] as? String
+
+    if statusItem != nil {
+      result(false)
+      return
+    }
+
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
     statusItem?.button?.action = #selector(onSystemTrayEventCallback(sender:))
@@ -68,10 +116,15 @@ class SystemTray: NSObject, NSMenuDelegate {
       }
     }
 
-    return true
+    result(true)
   }
 
-  func setSystemTrayInfo(title: String?, base64Icon: String?, toolTip: String?) -> Bool {
+  func setTrayInfo(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    let arguments = call.arguments as! [String: Any]
+    let title = arguments[kTitleKey] as? String
+    let base64Icon = arguments[kIconPathKey] as? String
+    let toolTip = arguments[kToolTipKey] as? String
+
     if let toolTip = toolTip {
       statusItem?.button?.toolTip = toolTip
     }
@@ -93,25 +146,34 @@ class SystemTray: NSObject, NSMenuDelegate {
       }
     }
 
-    return true
+    return result(true)
   }
 
-  func setContextMenu(menu: NSMenu) -> Bool {
-    statusItemMenu = menu
-    statusItemMenu?.delegate = self
-    return true
-  }
-
-  func popUpContextMenu() -> Bool {
-    if let statusItemMenu = statusItemMenu {
-      statusItem?.menu = statusItemMenu
-      statusItem?.button?.performClick(nil)
-      return true
+  func setContextMenu(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    if let menuId = call.arguments as? Int {
+      contextMenuId = menuId
+    } else {
+      contextMenuId = -1
     }
-    return false
+    result(true)
   }
 
-  func setPressedImage(base64Icon: String?) {
+  func popUpContextMenu(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    if let menu = menuManager?.getMenu(menuId: contextMenuId ?? -1) {
+      let nsMenu = menu.getNSMenu()
+      nsMenu?.delegate = self
+
+      statusItem?.menu = nsMenu
+      statusItem?.button?.performClick(nil)
+      result(true)
+      return
+    }
+    result(false)
+  }
+
+  func setPressedImage(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    let base64Icon = call.arguments as? String
+
     if let base64Icon = base64Icon {
       if let imageData = Data(base64Encoded: base64Icon, options: .ignoreUnknownCharacters),
         let itemImage = NSImage(data: imageData)
@@ -126,9 +188,24 @@ class SystemTray: NSObject, NSMenuDelegate {
     } else {
       statusItem?.button?.alternateImage = nil
     }
+
+    result(nil)
   }
 
-  func getTitle() -> String {
-    return statusItem?.button?.title ?? ""
+  func getTitle(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    result(statusItem?.button?.title ?? "")
+  }
+
+  func destroySystemTray(_ call: FlutterMethodCall, _ result: FlutterResult) {
+    contextMenuId = -1
+
+    if statusItem != nil {
+      NSStatusBar.system.removeStatusItem(statusItem!)
+
+      statusItem?.button?.image = nil
+      statusItem?.button?.alternateImage = nil
+      statusItem = nil
+    }
+    result(true)
   }
 }

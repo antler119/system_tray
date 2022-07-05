@@ -7,12 +7,15 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 set(PLUGIN_NAME "${PROJECT_NAME}_plugin")
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules (APPINDICATOR REQUIRED IMPORTED_TARGET appindicator3-0.1)
+pkg_check_modules(APPINDICATOR REQUIRED IMPORTED_TARGET appindicator3-0.1)
 
 add_library(${PLUGIN_NAME} SHARED
   "system_tray_plugin.cc"
-  "tray.cc"
   "app_window.cc"
+  "menu_manager.cc"
+  "menu.cc"
+  "tray.cc"
+  "errors.cc"
 )
 apply_standard_settings(${PLUGIN_NAME})
 set_target_properties(${PLUGIN_NAME} PROPERTIES

@@ -1,5 +1,111 @@
 #include "app_window.h"
 
+#include "errors.h"
+
+namespace {
+
+constexpr char kChannelName[] = "flutter/system_tray/app_window";
+
+constexpr char kInitAppWindow[] = "InitAppWindow";
+constexpr char kShowAppWindow[] = "ShowAppWindow";
+constexpr char kHideAppWindow[] = "HideAppWindow";
+constexpr char kCloseAppWindow[] = "CloseAppWindow";
+
+}  // namespace
+
+AppWindow::AppWindow(flutter::PluginRegistrarWindows* registrar) noexcept
+    : registrar_(registrar) {
+  assert(registrar_);
+
+  auto channel =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          registrar_->messenger(), kChannelName,
+          &flutter::StandardMethodCodec::GetInstance());
+
+  channel->SetMethodCallHandler([this](const auto& call, auto result) {
+    HandleMethodCall(call, std::move(result));
+  });
+
+  channel_ = std::move(channel);
+}
+
+AppWindow::~AppWindow() noexcept {
+  registrar_ = nullptr;
+}
+
+void AppWindow::HandleMethodCall(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+  // printf("method call %s\n", method_call.method_name().c_str());
+
+  if (method_call.method_name().compare(kInitAppWindow) == 0) {
+    initAppWindow(method_call, *result);
+  } else if (method_call.method_name().compare(kShowAppWindow) == 0) {
+    showAppWindow(method_call, *result);
+  } else if (method_call.method_name().compare(kHideAppWindow) == 0) {
+    hideAppWindow(method_call, *result);
+  } else if (method_call.method_name().compare(kCloseAppWindow) == 0) {
+    closeAppWindow(method_call, *result);
+  } else {
+    result->NotImplemented();
+  }
+}
+
+void AppWindow::initAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    flutter::FlutterView* view = registrar_->GetView();
+    if (!view) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    HWND flutter_window = view->GetNativeWindow();
+    HWND window = GetAncestor(flutter_window, GA_ROOT);
+
+    if (!initAppWindow(window, flutter_window)) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    result.Success(flutter::EncodableValue(true));
+
+  } while (false);
+}
+
+void AppWindow::showAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    showAppWindow(true);
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
+}
+
+void AppWindow::hideAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    showAppWindow(false);
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
+}
+
+void AppWindow::closeAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    closeAppWindow();
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
+}
+
 bool AppWindow::initAppWindow(HWND window, HWND flutter_window) {
   window_ = window;
   flutter_window_ = flutter_window;

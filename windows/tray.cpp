@@ -1,59 +1,213 @@
 #include "tray.h"
 
-#include <iostream>
+#include <memory>
 
 #include <strsafe.h>
 #include <windowsx.h>
-#include <winuser.h>
+
+#include "errors.h"
+#include "menu.h"
+#include "menu_manager.h"
+#include "utils.h"
 
 namespace {
-constexpr const wchar_t kTrayWindowClassName[] =
-    L"FLUTTER_RUNNER_WIN32_WINDOW_TRAY";
+
+constexpr wchar_t kTrayWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW_TRAY";
+
+constexpr char kChannelName[] = "flutter/system_tray/tray";
+
+constexpr char kInitSystemTray[] = "InitSystemTray";
+constexpr char kSetSystemTrayInfo[] = "SetSystemTrayInfo";
+constexpr char kSetContextMenu[] = "SetContextMenu";
+constexpr char kPopupContextMenu[] = "PopupContextMenu";
+constexpr char kGetTitle[] = "GetTitle";
+constexpr char kDestroySystemTray[] = "DestroySystemTray";
+
+constexpr char kTitleKey[] = "title";
+constexpr char kIconPathKey[] = "iconpath";
+constexpr char kToolTipKey[] = "tooltip";
+
+constexpr char kSystemTrayEventClick[] = "click";
+constexpr char kSystemTrayEventRightClick[] = "right-click";
+constexpr char kSystemTrayEventDoubleClick[] = "double-click";
+
+constexpr char kSystemTrayEventCallbackMethod[] = "SystemTrayEventCallback";
+
+}  // namespace
+
+Tray::Tray(flutter::PluginRegistrarWindows* registrar,
+           std::weak_ptr<MenuManager> menu_manager) noexcept
+    : registrar_(registrar), menu_manager_(menu_manager) {
+  assert(registrar_);
+
+  window_proc_id_ = registrar_->RegisterTopLevelWindowProcDelegate(
+      [this](HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+        return HandleWindowProc(hwnd, message, wparam, lparam);
+      });
+
+  auto channel =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          registrar_->messenger(), kChannelName,
+          &flutter::StandardMethodCodec::GetInstance());
+
+  channel->SetMethodCallHandler([this](const auto& call, auto result) {
+    HandleMethodCall(call, std::move(result));
+  });
+
+  channel_ = std::move(channel);
 }
 
-const static char kSystemTrayEventLButtnUp[] = "leftMouseUp";
-const static char kSystemTrayEventLButtnDown[] = "leftMouseDown";
-const static char kSystemTrayEventLButtonDblClk[] = "leftMouseDblClk";
-const static char kSystemTrayEventRButtnUp[] = "rightMouseUp";
-const static char kSystemTrayEventRButtnDown[] = "rightMouseDown";
+Tray::~Tray() noexcept {
+  registrar_->UnregisterTopLevelWindowProcDelegate(window_proc_id_);
 
-// Converts the given UTF-8 string to UTF-16.
-static std::wstring Utf16FromUtf8(const std::string& utf8_string) {
-  if (utf8_string.empty()) {
-    return std::wstring();
-  }
-  int target_length =
-      ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8_string.data(),
-                            static_cast<int>(utf8_string.length()), nullptr, 0);
-  if (target_length == 0) {
-    return std::wstring();
-  }
-  std::wstring utf16_string;
-  utf16_string.resize(target_length);
-  int converted_length =
-      ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8_string.data(),
-                            static_cast<int>(utf8_string.length()),
-                            utf16_string.data(), target_length);
-  if (converted_length == 0) {
-    return std::wstring();
-  }
-  return utf16_string;
-}
+  destroyTray();
 
-SystemTray::SystemTray(Delegate* delegate) : delegate_(delegate) {}
-
-SystemTray::~SystemTray() {
-  removeTrayIcon();
-  destroyIcon();
-  destroyMenu();
   DestoryTrayWindow();
   UnregisterWindowClass();
+
+  registrar_ = nullptr;
 }
 
-bool SystemTray::initSystemTray(HWND window,
-                                const std::string* title,
-                                const std::string* iconPath,
-                                const std::string* toolTip) {
+void Tray::HandleMethodCall(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+  // printf("method call %s\n", method_call.method_name().c_str());
+
+  if (method_call.method_name().compare(kInitSystemTray) == 0) {
+    initTray(method_call, *result);
+  } else if (method_call.method_name().compare(kSetSystemTrayInfo) == 0) {
+    setTrayInfo(method_call, *result);
+  } else if (method_call.method_name().compare(kSetContextMenu) == 0) {
+    setContextMenu(method_call, *result);
+  } else if (method_call.method_name().compare(kPopupContextMenu) == 0) {
+    popupContextMenu(method_call, *result);
+  } else if (method_call.method_name().compare(kGetTitle) == 0) {
+    getTitle(method_call, *result);
+  } else if (method_call.method_name().compare(kDestroySystemTray) == 0) {
+    destroyTray(method_call, *result);
+  } else {
+    result->NotImplemented();
+  }
+}
+
+void Tray::initTray(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    flutter::FlutterView* view = registrar_->GetView();
+    if (!view) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* map =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!map) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const std::string* title =
+        std::get_if<std::string>(utils::ValueOrNull(*map, kTitleKey));
+
+    const std::string* iconPath =
+        std::get_if<std::string>(utils::ValueOrNull(*map, kIconPathKey));
+
+    const std::string* toolTip =
+        std::get_if<std::string>(utils::ValueOrNull(*map, kToolTipKey));
+
+    HWND window = GetAncestor(view->GetNativeWindow(), GA_ROOT);
+    if (!initTray(window, title, iconPath, toolTip)) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    result.Success(flutter::EncodableValue(true));
+
+  } while (false);
+}
+
+void Tray::setTrayInfo(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    const auto* map =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!map) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const std::string* title =
+        std::get_if<std::string>(utils::ValueOrNull(*map, kTitleKey));
+
+    const std::string* iconPath =
+        std::get_if<std::string>(utils::ValueOrNull(*map, kIconPathKey));
+
+    const std::string* toolTip =
+        std::get_if<std::string>(utils::ValueOrNull(*map, kToolTipKey));
+
+    if (!setTrayInfo(title, iconPath, toolTip)) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    result.Success(flutter::EncodableValue(true));
+
+  } while (false);
+}
+
+void Tray::setContextMenu(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    const auto* menu_id = std::get_if<int>(method_call.arguments());
+    if (!menu_id) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    SetContextMenuId(*menu_id);
+
+    result.Success(flutter::EncodableValue(true));
+    return;
+
+  } while (false);
+}
+
+void Tray::popupContextMenu(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    ShowPopupMenu();
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
+}
+
+void Tray::getTitle(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  result.Success(flutter::EncodableValue(""));
+}
+
+void Tray::destroyTray(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  destroyTray();
+  result.Success(flutter::EncodableValue(true));
+}
+
+bool Tray::initTray(HWND window,
+                    const std::string* title,
+                    const std::string* iconPath,
+                    const std::string* toolTip) {
   bool ret = false;
 
   do {
@@ -76,9 +230,9 @@ bool SystemTray::initSystemTray(HWND window,
   return ret;
 }
 
-bool SystemTray::setSystemTrayInfo(const std::string* title,
-                                   const std::string* iconPath,
-                                   const std::string* toolTip) {
+bool Tray::setTrayInfo(const std::string* title,
+                       const std::string* iconPath,
+                       const std::string* toolTip) {
   bool ret = false;
 
   do {
@@ -92,7 +246,7 @@ bool SystemTray::setSystemTrayInfo(const std::string* title,
 
     if (toolTip) {
       nid_.uFlags |= NIF_TIP;
-      std::wstring toolTip_u = Utf16FromUtf8(*toolTip);
+      std::wstring toolTip_u = utils::Utf16FromUtf8(*toolTip);
       StringCchCopy(nid_.szTip, _countof(nid_.szTip), toolTip_u.c_str());
     }
 
@@ -100,7 +254,7 @@ bool SystemTray::setSystemTrayInfo(const std::string* title,
       destroyIcon();
 
       nid_.uFlags |= NIF_ICON;
-      std::wstring iconPath_u = Utf16FromUtf8(*iconPath);
+      std::wstring iconPath_u = utils::Utf16FromUtf8(*iconPath);
       icon_ =
           static_cast<HICON>(LoadImage(nullptr, iconPath_u.c_str(), IMAGE_ICON,
                                        0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE));
@@ -117,28 +271,18 @@ bool SystemTray::setSystemTrayInfo(const std::string* title,
   return ret;
 }
 
-bool SystemTray::setContextMenu(HMENU context_menu) {
-  destroyMenu();
-  context_menu_ = context_menu;
-  return true;
-}
-
-void SystemTray::popUpContextMenu() {
-  ShowPopupMenu();
-}
-
-bool SystemTray::installTrayIcon(HWND window,
-                                 const std::string* title,
-                                 const std::string* iconPath,
-                                 const std::string* toolTip) {
+bool Tray::installTrayIcon(HWND window,
+                           const std::string* title,
+                           const std::string* iconPath,
+                           const std::string* toolTip) {
   bool ret = false;
 
   do {
     destroyIcon();
 
-    std::wstring title_u = title ? Utf16FromUtf8(*title) : L"";
-    std::wstring iconPath_u = iconPath ? Utf16FromUtf8(*iconPath) : L"";
-    std::wstring toolTip_u = toolTip ? Utf16FromUtf8(*toolTip) : L"";
+    std::wstring title_u = title ? utils::Utf16FromUtf8(*title) : L"";
+    std::wstring iconPath_u = iconPath ? utils::Utf16FromUtf8(*iconPath) : L"";
+    std::wstring toolTip_u = toolTip ? utils::Utf16FromUtf8(*toolTip) : L"";
 
     icon_ =
         static_cast<HICON>(LoadImage(nullptr, iconPath_u.c_str(), IMAGE_ICON, 0,
@@ -149,6 +293,7 @@ bool SystemTray::installTrayIcon(HWND window,
 
     window_ = window;
 
+    nid_.cbSize = {sizeof(NOTIFYICONDATA)};
     nid_.uVersion = NOTIFYICON_VERSION_4;  // Windows Vista and later support
     nid_.hWnd = window_;
     nid_.hIcon = icon_;
@@ -166,14 +311,24 @@ bool SystemTray::installTrayIcon(HWND window,
   return ret;
 }
 
-bool SystemTray::removeTrayIcon() {
+bool Tray::removeTrayIcon() {
   if (tray_icon_installed_) {
-    return Shell_NotifyIcon(NIM_DELETE, &nid_);
+    if (Shell_NotifyIcon(NIM_DELETE, &nid_)) {
+      tray_icon_installed_ = false;
+      memset(&nid_, 0, sizeof(nid_));
+      return true;
+    }
   }
   return false;
 }
 
-bool SystemTray::reinstallTrayIcon() {
+void Tray::destroyTray() {
+  context_menu_id_ = -1;
+  removeTrayIcon();
+  destroyIcon();
+}
+
+bool Tray::reinstallTrayIcon() {
   if (tray_icon_installed_) {
     tray_icon_installed_ = Shell_NotifyIcon(NIM_ADD, &nid_);
     return tray_icon_installed_;
@@ -181,24 +336,17 @@ bool SystemTray::reinstallTrayIcon() {
   return false;
 }
 
-void SystemTray::destroyIcon() {
+void Tray::destroyIcon() {
   if (icon_) {
     DestroyIcon(icon_);
     icon_ = nullptr;
   }
 }
 
-void SystemTray::destroyMenu() {
-  if (context_menu_) {
-    DestroyMenu(context_menu_);
-    context_menu_ = nullptr;
-  }
-}
-
-std::optional<LRESULT> SystemTray::HandleWindowProc(HWND hwnd,
-                                                    UINT message,
-                                                    WPARAM wparam,
-                                                    LPARAM lparam) {
+std::optional<LRESULT> Tray::HandleWindowProc(HWND hwnd,
+                                              UINT message,
+                                              WPARAM wparam,
+                                              LPARAM lparam) {
   if (message == taskbar_created_message_) {
     reinstallTrayIcon();
     return 0;
@@ -211,63 +359,31 @@ std::optional<LRESULT> SystemTray::HandleWindowProc(HWND hwnd,
   return std::nullopt;
 }
 
-std::optional<LRESULT> SystemTray::OnTrayIconCallback(UINT id,
-                                                      UINT notifyMsg,
-                                                      const POINT& pt) {
+std::optional<LRESULT> Tray::OnTrayIconCallback(UINT id,
+                                                UINT notifyMsg,
+                                                const POINT& pt) {
   do {
     switch (notifyMsg) {
       case WM_LBUTTONDOWN: {
-        if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtnDown);
-        }
       } break;
       case WM_LBUTTONUP: {
-        if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtnUp);
-        }
+        OnSystemTrayEventCallback(kSystemTrayEventClick);
       } break;
       case WM_LBUTTONDBLCLK: {
-        if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventLButtonDblClk);
-        }
+        OnSystemTrayEventCallback(kSystemTrayEventDoubleClick);
       } break;
       case WM_RBUTTONDOWN: {
-        if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventRButtnDown);
-        }
       } break;
       case WM_RBUTTONUP: {
-        if (delegate_) {
-          delegate_->OnSystemTrayEventCallback(kSystemTrayEventRButtnUp);
-        }
+        OnSystemTrayEventCallback(kSystemTrayEventRightClick);
       } break;
-        // default: {
-        //   printf("OnTrayIconCallback id:%d, 0x%x, pt[%d,%d]\n", id,
-        //   notifyMsg,
-        //          pt.x, pt.y);
-        // } break;
     }
 
   } while (false);
   return 0;
 }
 
-void SystemTray::ShowPopupMenu() {
-  if (!context_menu_) {
-    return;
-  }
-
-  POINT pt{};
-  GetCursorPos(&pt);
-
-  SetForegroundWindow(tray_window_);
-
-  TrackPopupMenu(context_menu_, TPM_LEFTBUTTON, pt.x, pt.y, 0, window_,
-                 nullptr);
-  PostMessage(window_, WM_NULL, 0, 0);
-}
-
-const wchar_t* SystemTray::GetTrayWindowClass() {
+const wchar_t* Tray::GetTrayWindowClass() {
   if (!tray_class_registered_) {
     WNDCLASS window_class{};
     window_class.hCursor = nullptr;
@@ -279,7 +395,7 @@ const wchar_t* SystemTray::GetTrayWindowClass() {
     window_class.hIcon = nullptr;
     window_class.hbrBackground = 0;
     window_class.lpszMenuName = nullptr;
-    window_class.lpfnWndProc = SystemTray::TrayWndProc;
+    window_class.lpfnWndProc = Tray::TrayWndProc;
     RegisterClass(&window_class);
     tray_class_registered_ = true;
   }
@@ -287,38 +403,38 @@ const wchar_t* SystemTray::GetTrayWindowClass() {
   return kTrayWindowClassName;
 }
 
-void SystemTray::UnregisterWindowClass() {
+void Tray::UnregisterWindowClass() {
   UnregisterClass(kTrayWindowClassName, nullptr);
   tray_class_registered_ = false;
 }
 
-LRESULT CALLBACK SystemTray::TrayWndProc(HWND const window,
-                                         UINT const message,
-                                         WPARAM const wparam,
-                                         LPARAM const lparam) noexcept {
+LRESULT CALLBACK Tray::TrayWndProc(HWND const window,
+                                   UINT const message,
+                                   WPARAM const wparam,
+                                   LPARAM const lparam) noexcept {
   if (message == WM_NCCREATE) {
     auto window_struct = reinterpret_cast<CREATESTRUCT*>(lparam);
     SetWindowLongPtr(window, GWLP_USERDATA,
                      reinterpret_cast<LONG_PTR>(window_struct->lpCreateParams));
-  } else if (SystemTray* that = GetThisFromHandle(window)) {
+  } else if (Tray* that = GetThisFromHandle(window)) {
     return that->TrayMessageHandler(window, message, wparam, lparam);
   }
 
   return DefWindowProc(window, message, wparam, lparam);
 }
 
-SystemTray* SystemTray::GetThisFromHandle(HWND const window) noexcept {
-  return reinterpret_cast<SystemTray*>(GetWindowLongPtr(window, GWLP_USERDATA));
+Tray* Tray::GetThisFromHandle(HWND const window) noexcept {
+  return reinterpret_cast<Tray*>(GetWindowLongPtr(window, GWLP_USERDATA));
 }
 
-LRESULT SystemTray::TrayMessageHandler(HWND window,
-                                       UINT const message,
-                                       WPARAM const wparam,
-                                       LPARAM const lparam) noexcept {
+LRESULT Tray::TrayMessageHandler(HWND window,
+                                 UINT const message,
+                                 WPARAM const wparam,
+                                 LPARAM const lparam) noexcept {
   return DefWindowProc(window, message, wparam, lparam);
 }
 
-bool SystemTray::CreateTrayWindow() {
+bool Tray::CreateTrayWindow() {
   HWND window =
       CreateWindow(GetTrayWindowClass(), nullptr, WS_OVERLAPPEDWINDOW, -1, -1,
                    0, 0, nullptr, nullptr, GetModuleHandle(nullptr), this);
@@ -330,9 +446,43 @@ bool SystemTray::CreateTrayWindow() {
   return true;
 }
 
-void SystemTray::DestoryTrayWindow() {
+void Tray::DestoryTrayWindow() {
   if (tray_window_) {
     DestroyWindow(tray_window_);
     tray_window_ = nullptr;
   }
+}
+
+void Tray::OnSystemTrayEventCallback(const std::string& eventName) {
+  channel_->InvokeMethod(kSystemTrayEventCallbackMethod,
+                         std::make_unique<flutter::EncodableValue>(eventName));
+}
+
+void Tray::ShowPopupMenu() {
+  if (menu_manager_.expired()) {
+    return;
+  }
+
+  std::shared_ptr<MenuManager> menu_manager = menu_manager_.lock();
+  std::shared_ptr<Menu> menu = menu_manager->GetMenu(GetContextMenuId());
+  if (!menu) {
+    return;
+  }
+
+  POINT pt{};
+  GetCursorPos(&pt);
+
+  SetForegroundWindow(tray_window_);
+
+  menu->PopupContextMenu(window_, pt);
+
+  PostMessage(window_, WM_NULL, 0, 0);
+}
+
+void Tray::SetContextMenuId(int context_menu_id) {
+  context_menu_id_ = context_menu_id;
+}
+
+int Tray::GetContextMenuId() const {
+  return context_menu_id_;
 }

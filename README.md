@@ -11,7 +11,7 @@ In the pubspec.yaml of your flutter project, add the following dependency:
 ```yaml
 dependencies:
   ...
-  system_tray: ^0.1.1
+  system_tray: ^2.0.0
 ```
 
 In your library add the following import:
@@ -116,27 +116,71 @@ sudo apt-get install appindicator3-0.1 libappindicator3-dev
         <td>✔️</td>
         <td>➖</td>
     </tr>
+    </tr>
+       <tr>
+        <td>destroy</td>
+        <td>Destroy the tray</td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>✔️</td>
+    </tr>
     <tr>
         <td>registerSystemTrayEventHandler</td>
         <td>Register system tray event</td>
         <td>
           <ul>
-            <li>leftMouseUp</li>
-            <li>leftMouseDown</li>
-            <li>leftMouseDblClk</li>
-            <li>rightMouseUp</li>
-            <li>rightMouseDown</li>
+            <li>click</li>
+            <li>right-click</li>
+            <li>double-click</li>
           </ul>
         </td>
         <td>         
           <ul>
-            <li>leftMouseUp</li>
-            <li>leftMouseDown</li>
-            <li>rightMouseUp</li>
-            <li>rightMouseDown</li>
+            <li>click</li>
+            <li>right-click</li>
           </ul>
         </td>
         <td>➖</td>
+    </tr>
+</table>
+
+## Menu
+
+<table>
+    <tr>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Windows</th>
+        <th>macOS</th>
+        <th>Linux</th>
+    </tr>
+    <tr>
+        <td>MenuItemLable</td>
+        <td></td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>✔️</td>
+    </tr>
+    <tr>
+        <td>MenuItemCheckbox</td>
+        <td></td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>✔️</td>
+    </tr>
+    <tr>
+        <td>SubMenu</td>
+        <td></td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>✔️</td>
+    </tr>
+    <tr>
+        <td>MenuSeparator</td>
+        <td></td>
+        <td>✔️</td>
+        <td>✔️</td>
+        <td>✔️</td>
     </tr>
 </table>
 
@@ -147,29 +191,33 @@ Future<void> initSystemTray() async {
   String path =
       Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
 
-  final menu = [
-    MenuItem(label: 'Show', onClicked: _appWindow.show),
-    MenuItem(label: 'Hide', onClicked: _appWindow.hide),
-    MenuItem(label: 'Exit', onClicked: _appWindow.close),
-  ];
+  final AppWindow appWindow = AppWindow();
+  final SystemTray systemTray = SystemTray();
 
-  // We first init the systray menu and then add the menu entries
-  await _systemTray.initSystemTray(
+  // We first init the systray menu
+  await systemTray.initSystemTray(
     title: "system tray",
     iconPath: path,
   );
 
-  await _systemTray.setContextMenu(menu);
+  // create context menu
+  final Menu menu = Menu();
+  await menu.buildFrom([
+    MenuItem(label: 'Show', onClicked: (menuItem) => appWindow.show()),
+    MenuItem(label: 'Hide', onClicked: (menuItem) => appWindow.hide()),
+    MenuItem(label: 'Exit', onClicked: (menuItem) => appWindow.close()),
+  ]);
+
+  // set context menu
+  await systemTray.setContextMenu(menu);
 
   // handle system tray event
-  _systemTray.registerSystemTrayEventHandler((eventName) {
+  systemTray.registerSystemTrayEventHandler((eventName) {
     debugPrint("eventName: $eventName");
-    if (eventName == "leftMouseDown") {
-    } else if (eventName == "leftMouseUp") {
-      _systemTray.popUpContextMenu();
-    } else if (eventName == "rightMouseDown") {
-    } else if (eventName == "rightMouseUp") {
-      _appWindow.show();
+    if (eventName == kSystemTrayEventClick) {
+       Platform.isWindows ? appWindow.show() : systemTray.popUpContextMenu();
+    } else if (eventName == kSystemTrayEventRightClick) {
+       Platform.isWindows ? systemTray.popUpContextMenu() : appWindow.show();
     }
   });
 }

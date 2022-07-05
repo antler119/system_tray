@@ -1,7 +1,15 @@
+## 2.0.0
+
+* [Feature] support MenuItemCheckbox
+* [Feature] support add menu item with image (except linux)
+* [Feature] support modify MenuItem property
+* [Feature] support destroy tray
+* [Feature] support multiple context menu
+
 ## 0.1.1
 
 * [Fixed] support flutter 3.0
-  
+
 ## 0.1.0
 
 * [Feature] add some helper functions (setImage / setTooltip / setTitle / getTitle)

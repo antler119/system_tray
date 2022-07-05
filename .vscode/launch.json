@@ -5,8 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Flutter",
+      "type": "dart",
+      "request": "launch",
+      "program": "example/lib/main.dart"
+    },
+    {
       "name": "(lldb) Launch",
-      "type": "cppdbg",
+      "type": "lldb",
+      // "type": "cppdbg",
       "request": "launch",
       "sourceFileMap": {
         "../..": "${workspaceFolder}"
