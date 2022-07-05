@@ -15,7 +15,7 @@ class Menu;
 
 class MenuManager {
  public:
-  MenuManager(flutter::PluginRegistrarWindows* registrar);
+  MenuManager(flutter::PluginRegistrarWindows* registrar) noexcept;
   ~MenuManager() noexcept;
 
   std::shared_ptr<Menu> GetMenu(int menu_id);
@@ -44,6 +44,8 @@ class MenuManager {
                 flutter::MethodResult<flutter::EncodableValue>& result);
 
   bool AddMenu(int menu_id, std::unique_ptr<Menu> menu);
+  std::shared_ptr<Menu> GetMenu(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call);
 
  protected:
   flutter::PluginRegistrarWindows* registrar_ = nullptr;

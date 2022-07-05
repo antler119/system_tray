@@ -12,7 +12,8 @@
     },
     {
       "name": "(lldb) Launch",
-      "type": "cppdbg",
+      "type": "lldb",
+      // "type": "cppdbg",
       "request": "launch",
       "sourceFileMap": {
         "../..": "${workspaceFolder}"

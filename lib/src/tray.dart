@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
 
 import 'menu.dart';
 import 'utils.dart';
@@ -12,9 +13,11 @@ const String _kSetSystemTrayInfo = "SetSystemTrayInfo";
 const String _kSetContextMenu = "SetContextMenu";
 const String _kPopupContextMenu = "PopupContextMenu";
 const String _kGetTitle = "GetTitle";
+const String _kDestroySystemTray = "DestroySystemTray";
 
 const String _kSystemTrayEventCallbackMethod = 'SystemTrayEventCallback';
 
+const String _kTrayIdKey = "tray_id";
 const String _kTitleKey = "title";
 const String _kIconPathKey = "iconpath";
 const String _kToolTipKey = "tooltip";
@@ -42,8 +45,9 @@ class SystemTray {
     bool value = await _platformChannel.invokeMethod(
       _kInitSystemTray,
       <String, dynamic>{
+        _kTrayIdKey: const Uuid().v1(),
         _kTitleKey: title,
-        _kIconPathKey: await Utils.getIcon2(iconPath),
+        _kIconPathKey: await Utils.getIcon(iconPath),
         _kToolTipKey: toolTip,
       },
     );
@@ -60,7 +64,7 @@ class SystemTray {
       _kSetSystemTrayInfo,
       <String, dynamic>{
         _kTitleKey: title,
-        _kIconPathKey: await Utils.getIcon2(iconPath),
+        _kIconPathKey: await Utils.getIcon(iconPath),
         _kToolTipKey: toolTip,
       },
     );
@@ -87,11 +91,6 @@ class SystemTray {
     return await _platformChannel.invokeMethod(_kGetTitle);
   }
 
-  /// register listener for system tray event.
-  void registerSystemTrayEventHandler(SystemTrayEventCallback callback) {
-    _systemTrayEventCallback = callback;
-  }
-
   /// Sets the native application menu to [menus].
   ///
   /// How exactly this is handled is subject to platform interpretation.
@@ -107,6 +106,11 @@ class SystemTray {
     await _platformChannel.invokeMethod(_kPopupContextMenu);
   }
 
+  /// register listener for system tray event.
+  void registerSystemTrayEventHandler(SystemTrayEventCallback callback) {
+    _systemTrayEventCallback = callback;
+  }
+
   Future<void> _callbackHandler(MethodCall methodCall) async {
     if (methodCall.method == _kSystemTrayEventCallbackMethod) {
       if (_systemTrayEventCallback != null) {
@@ -114,5 +118,9 @@ class SystemTray {
         _systemTrayEventCallback!(eventName);
       }
     }
+  }
+
+  Future<void> destroy() async {
+    await _platformChannel.invokeMethod(_kDestroySystemTray);
   }
 }

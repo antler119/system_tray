@@ -16,7 +16,7 @@ class MenuManager;
 class Tray {
  public:
   Tray(flutter::PluginRegistrarWindows* registrar,
-       std::weak_ptr<MenuManager> menu_manager);
+       std::weak_ptr<MenuManager> menu_manager) noexcept;
   ~Tray() noexcept;
 
  protected:
@@ -45,6 +45,13 @@ class Tray {
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
 
+  void getTitle(const flutter::MethodCall<flutter::EncodableValue>& method_call,
+                flutter::MethodResult<flutter::EncodableValue>& result);
+
+  void destroyTray(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call,
+      flutter::MethodResult<flutter::EncodableValue>& result);
+
   bool initTray(HWND window,
                 const std::string* title,
                 const std::string* iconPath,
@@ -54,12 +61,11 @@ class Tray {
                    const std::string* iconPath,
                    const std::string* toolTip);
 
-  bool setContextMenu(HMENU context_menu);
-
   bool installTrayIcon(HWND window,
                        const std::string* title,
                        const std::string* iconPath,
                        const std::string* toolTip);
+  void destroyTray();
   bool removeTrayIcon();
   bool reinstallTrayIcon();
   void destroyIcon();

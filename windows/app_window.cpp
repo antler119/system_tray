@@ -13,7 +13,7 @@ constexpr char kCloseAppWindow[] = "CloseAppWindow";
 
 }  // namespace
 
-AppWindow::AppWindow(flutter::PluginRegistrarWindows* registrar)
+AppWindow::AppWindow(flutter::PluginRegistrarWindows* registrar) noexcept
     : registrar_(registrar) {
   assert(registrar_);
 
@@ -36,7 +36,7 @@ AppWindow::~AppWindow() noexcept {
 void AppWindow::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  printf("method call %s\n", method_call.method_name().c_str());
+  // printf("method call %s\n", method_call.method_name().c_str());
 
   if (method_call.method_name().compare(kInitAppWindow) == 0) {
     initAppWindow(method_call, *result);
@@ -57,7 +57,7 @@ void AppWindow::initAppWindow(
   do {
     flutter::FlutterView* view = registrar_->GetView();
     if (!view) {
-      result.Error(errors::kBadArgumentsError, "Expected window",
+      result.Error(errors::kBadArgumentsError, "",
                    flutter::EncodableValue(false));
       break;
     }
@@ -66,7 +66,7 @@ void AppWindow::initAppWindow(
     HWND window = GetAncestor(flutter_window, GA_ROOT);
 
     if (!initAppWindow(window, flutter_window)) {
-      result.Error(errors::kBadArgumentsError, "Unable to init appwindow",
+      result.Error(errors::kBadArgumentsError, "",
                    flutter::EncodableValue(false));
       break;
     }

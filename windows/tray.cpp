@@ -20,6 +20,8 @@ constexpr char kInitSystemTray[] = "InitSystemTray";
 constexpr char kSetSystemTrayInfo[] = "SetSystemTrayInfo";
 constexpr char kSetContextMenu[] = "SetContextMenu";
 constexpr char kPopupContextMenu[] = "PopupContextMenu";
+constexpr char kGetTitle[] = "GetTitle";
+constexpr char kDestroySystemTray[] = "DestroySystemTray";
 
 constexpr char kTitleKey[] = "title";
 constexpr char kIconPathKey[] = "iconpath";
@@ -34,7 +36,7 @@ constexpr char kSystemTrayEventCallbackMethod[] = "SystemTrayEventCallback";
 }  // namespace
 
 Tray::Tray(flutter::PluginRegistrarWindows* registrar,
-           std::weak_ptr<MenuManager> menu_manager)
+           std::weak_ptr<MenuManager> menu_manager) noexcept
     : registrar_(registrar), menu_manager_(menu_manager) {
   assert(registrar_);
 
@@ -58,8 +60,8 @@ Tray::Tray(flutter::PluginRegistrarWindows* registrar,
 Tray::~Tray() noexcept {
   registrar_->UnregisterTopLevelWindowProcDelegate(window_proc_id_);
 
-  removeTrayIcon();
-  destroyIcon();
+  destroyTray();
+
   DestoryTrayWindow();
   UnregisterWindowClass();
 
@@ -69,7 +71,7 @@ Tray::~Tray() noexcept {
 void Tray::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  printf("method call %s\n", method_call.method_name().c_str());
+  // printf("method call %s\n", method_call.method_name().c_str());
 
   if (method_call.method_name().compare(kInitSystemTray) == 0) {
     initTray(method_call, *result);
@@ -79,6 +81,10 @@ void Tray::HandleMethodCall(
     setContextMenu(method_call, *result);
   } else if (method_call.method_name().compare(kPopupContextMenu) == 0) {
     popupContextMenu(method_call, *result);
+  } else if (method_call.method_name().compare(kGetTitle) == 0) {
+    getTitle(method_call, *result);
+  } else if (method_call.method_name().compare(kDestroySystemTray) == 0) {
+    destroyTray(method_call, *result);
   } else {
     result->NotImplemented();
   }
@@ -90,7 +96,7 @@ void Tray::initTray(
   do {
     flutter::FlutterView* view = registrar_->GetView();
     if (!view) {
-      result.Error(errors::kBadArgumentsError, "Expected window",
+      result.Error(errors::kBadArgumentsError, "",
                    flutter::EncodableValue(false));
       break;
     }
@@ -98,7 +104,7 @@ void Tray::initTray(
     const auto* map =
         std::get_if<flutter::EncodableMap>(method_call.arguments());
     if (!map) {
-      result.Error(errors::kBadArgumentsError, "Expected map",
+      result.Error(errors::kBadArgumentsError, "",
                    flutter::EncodableValue(false));
       break;
     }
@@ -114,7 +120,7 @@ void Tray::initTray(
 
     HWND window = GetAncestor(view->GetNativeWindow(), GA_ROOT);
     if (!initTray(window, title, iconPath, toolTip)) {
-      result.Error(errors::kBadArgumentsError, "Unable to init tray",
+      result.Error(errors::kBadArgumentsError, "",
                    flutter::EncodableValue(false));
       break;
     }
@@ -131,7 +137,7 @@ void Tray::setTrayInfo(
     const auto* map =
         std::get_if<flutter::EncodableMap>(method_call.arguments());
     if (!map) {
-      result.Error(errors::kBadArgumentsError, "Expected map",
+      result.Error(errors::kBadArgumentsError, "",
                    flutter::EncodableValue(false));
       break;
     }
@@ -146,7 +152,7 @@ void Tray::setTrayInfo(
         std::get_if<std::string>(utils::ValueOrNull(*map, kToolTipKey));
 
     if (!setTrayInfo(title, iconPath, toolTip)) {
-      result.Error(errors::kBadArgumentsError, "Unable to set tray info",
+      result.Error(errors::kBadArgumentsError, "",
                    flutter::EncodableValue(false));
       break;
     }
@@ -162,7 +168,7 @@ void Tray::setContextMenu(
   do {
     const auto* menu_id = std::get_if<int>(method_call.arguments());
     if (!menu_id) {
-      result.Error(errors::kBadArgumentsError, "Expected int",
+      result.Error(errors::kBadArgumentsError, "",
                    flutter::EncodableValue(false));
       break;
     }
@@ -183,6 +189,19 @@ void Tray::popupContextMenu(
 
     result.Success(flutter::EncodableValue(true));
   } while (false);
+}
+
+void Tray::getTitle(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  result.Success(flutter::EncodableValue(""));
+}
+
+void Tray::destroyTray(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  destroyTray();
+  result.Success(flutter::EncodableValue(true));
 }
 
 bool Tray::initTray(HWND window,
@@ -274,6 +293,7 @@ bool Tray::installTrayIcon(HWND window,
 
     window_ = window;
 
+    nid_.cbSize = {sizeof(NOTIFYICONDATA)};
     nid_.uVersion = NOTIFYICON_VERSION_4;  // Windows Vista and later support
     nid_.hWnd = window_;
     nid_.hIcon = icon_;
@@ -293,9 +313,19 @@ bool Tray::installTrayIcon(HWND window,
 
 bool Tray::removeTrayIcon() {
   if (tray_icon_installed_) {
-    return Shell_NotifyIcon(NIM_DELETE, &nid_);
+    if (Shell_NotifyIcon(NIM_DELETE, &nid_)) {
+      tray_icon_installed_ = false;
+      memset(&nid_, 0, sizeof(nid_));
+      return true;
+    }
   }
   return false;
+}
+
+void Tray::destroyTray() {
+  context_menu_id_ = -1;
+  removeTrayIcon();
+  destroyIcon();
 }
 
 bool Tray::reinstallTrayIcon() {

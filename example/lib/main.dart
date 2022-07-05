@@ -9,7 +9,9 @@ import 'package:system_tray/system_tray.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  runApp(
+    const MyApp(),
+  );
 
   doWhenWindowReady(() {
     final win = appWindow;
@@ -20,6 +22,14 @@ void main() async {
     win.title = "How to use system tray with Flutter";
     win.show();
   });
+}
+
+String getTrayImagePath(String imageName) {
+  return Platform.isWindows ? 'assets/$imageName.ico' : 'assets/$imageName.png';
+}
+
+String getImagePath(String imageName) {
+  return Platform.isWindows ? 'assets/$imageName.bmp' : 'assets/$imageName.png';
 }
 
 class MyApp extends StatefulWidget {
@@ -52,17 +62,11 @@ class _MyAppState extends State<MyApp> {
     _timer?.cancel();
   }
 
-  String getImagePath(String imageName) {
-    return Platform.isWindows
-        ? 'assets/$imageName.ico'
-        : 'assets/$imageName.png';
-  }
-
   Future<void> initSystemTray() async {
     List<String> iconList = ['darts_icon', 'gift_icon'];
 
     // We first init the systray menu and then add the menu entries
-    await _systemTray.initSystemTray(iconPath: getImagePath('app_icon'));
+    await _systemTray.initSystemTray(iconPath: getTrayImagePath('app_icon'));
     _systemTray.setTitle("system tray");
     _systemTray.setToolTip("How to use system tray with Flutter");
 
@@ -80,8 +84,8 @@ class _MyAppState extends State<MyApp> {
       [
         MenuItemLable(
           label: 'Change Context Menu',
-          image: 'assets/darts_icon.bmp',
-          onClicked: () {
+          image: getImagePath('darts_icon'),
+          onClicked: (menuItem) {
             debugPrint("Change Context Menu");
 
             _toogleMenu = !_toogleMenu;
@@ -89,44 +93,55 @@ class _MyAppState extends State<MyApp> {
           },
         ),
         MenuSeparator(),
-        MenuItemLable(label: 'Show', onClicked: _appWindow.show),
-        MenuItemLable(label: 'Hide', onClicked: _appWindow.hide),
+        MenuItemLable(
+            label: 'Show',
+            image: getImagePath('darts_icon'),
+            onClicked: (menuItem) => _appWindow.show()),
+        MenuItemLable(
+            label: 'Hide',
+            image: getImagePath('darts_icon'),
+            onClicked: (menuItem) => _appWindow.hide()),
         MenuItemLable(
           label: 'Start flash tray icon',
-          onClicked: () {
+          image: getImagePath('darts_icon'),
+          onClicked: (menuItem) {
             debugPrint("Start flash tray icon");
 
             _timer ??= Timer.periodic(
-              const Duration(milliseconds: 500),
+              const Duration(milliseconds: 1000),
               (timer) {
                 _toogleTrayIcon = !_toogleTrayIcon;
-                _systemTray
-                    .setImage(_toogleTrayIcon ? "" : getImagePath('app_icon'));
+                _systemTray.setImage(
+                    _toogleTrayIcon ? "" : getTrayImagePath('app_icon'));
               },
             );
           },
         ),
         MenuItemLable(
           label: 'Stop flash tray icon',
-          onClicked: () {
+          image: getImagePath('darts_icon'),
+          onClicked: (menuItem) {
             debugPrint("Stop flash tray icon");
 
             _timer?.cancel();
             _timer = null;
 
-            _systemTray.setImage(getImagePath('app_icon'));
+            _systemTray.setImage(getTrayImagePath('app_icon'));
           },
         ),
         MenuSeparator(),
         SubMenu(
           label: "Test API",
+          image: getImagePath('gift_icon'),
           children: [
             SubMenu(
               label: "setSystemTrayInfo",
+              image: getImagePath('darts_icon'),
               children: [
                 MenuItemLable(
                   label: 'setTitle',
-                  onClicked: () {
+                  image: getImagePath('darts_icon'),
+                  onClicked: (menuItem) {
                     final String text = WordPair.random().asPascalCase;
                     debugPrint("click 'setTitle' : $text");
                     _systemTray.setTitle(text);
@@ -134,89 +149,108 @@ class _MyAppState extends State<MyApp> {
                 ),
                 MenuItemLable(
                   label: 'setImage',
-                  onClicked: () {
+                  image: getImagePath('gift_icon'),
+                  onClicked: (menuItem) {
                     String iconName =
                         iconList[Random().nextInt(iconList.length)];
-                    String path = getImagePath(iconName);
+                    String path = getTrayImagePath(iconName);
                     debugPrint("click 'setImage' : $path");
                     _systemTray.setImage(path);
                   },
                 ),
                 MenuItemLable(
                   label: 'setToolTip',
-                  onClicked: () {
+                  onClicked: (menuItem) {
                     final String text = WordPair.random().asPascalCase;
                     debugPrint("click 'setToolTip' : $text");
                     _systemTray.setToolTip(text);
                   },
                 ),
                 MenuItemLable(
-                  label: 'getTitle [macOS]',
-                  onClicked: () async {
+                  label: 'getTitle',
+                  image: getImagePath('gift_icon'),
+                  onClicked: (menuItem) async {
                     String title = await _systemTray.getTitle();
                     debugPrint("click 'getTitle' : $title");
                   },
                 ),
               ],
             ),
-            MenuItemLable(label: 'disabled Item', enabled: false),
+            MenuItemLable(
+                label: 'disabled Item',
+                name: 'disableItem',
+                image: getImagePath('gift_icon'),
+                enabled: false),
           ],
         ),
         MenuSeparator(),
+        MenuItemLable(
+          label: 'Set Item Image',
+          onClicked: (menuItem) async {
+            debugPrint("click 'SetItemImage'");
+
+            String iconName = iconList[Random().nextInt(iconList.length)];
+            String path = getImagePath(iconName);
+
+            await menuItem.setImage(path);
+            debugPrint(
+                "click name: ${menuItem.name} menuItemId: ${menuItem.menuItemId} label: ${menuItem.label} image: ${menuItem.image}");
+          },
+        ),
         MenuItemCheckbox(
           label: 'Checkbox 1',
           name: 'checkbox1',
           checked: true,
-          onClicked: () async {
+          onClicked: (menuItem) async {
             debugPrint("click 'Checkbox 1'");
 
-            MenuItemCheckbox? menuItem =
-                _menuMain.findItemByName("checkbox1") as MenuItemCheckbox?;
-            await menuItem?.setCheck(!menuItem.checked);
+            MenuItemCheckbox? checkbox1 =
+                _menuMain.findItemByName<MenuItemCheckbox>("checkbox1");
+            await checkbox1?.setCheck(!checkbox1.checked);
+
+            MenuItemCheckbox? checkbox2 =
+                _menuMain.findItemByName<MenuItemCheckbox>("checkbox2");
+            await checkbox2?.setEnable(checkbox1?.checked ?? true);
+
             debugPrint(
-                "click name: ${menuItem?.name} menuItemId: ${menuItem?.menuItemId} label: ${menuItem?.label} checked: ${menuItem?.checked}");
+                "click name: ${checkbox1?.name} menuItemId: ${checkbox1?.menuItemId} label: ${checkbox1?.label} checked: ${checkbox1?.checked}");
           },
         ),
         MenuItemCheckbox(
           label: 'Checkbox 2',
           name: 'checkbox2',
-          onClicked: () async {
+          onClicked: (menuItem) async {
             debugPrint("click 'Checkbox 2'");
 
-            MenuItemCheckbox? menuItem =
-                _menuMain.findItemByName("checkbox2") as MenuItemCheckbox?;
-            await menuItem?.setCheck(!menuItem.checked);
-            await menuItem?.setLable(WordPair.random().asPascalCase);
+            await menuItem.setCheck(!menuItem.checked);
+            await menuItem.setLable(WordPair.random().asPascalCase);
             debugPrint(
-                "click name: ${menuItem?.name} menuItemId: ${menuItem?.menuItemId} label: ${menuItem?.label} checked: ${menuItem?.checked}");
+                "click name: ${menuItem.name} menuItemId: ${menuItem.menuItemId} label: ${menuItem.label} checked: ${menuItem.checked}");
           },
         ),
         MenuItemCheckbox(
           label: 'Checkbox 3',
           name: 'checkbox3',
           checked: true,
-          onClicked: () async {
+          onClicked: (menuItem) async {
             debugPrint("click 'Checkbox 3'");
 
-            MenuItemCheckbox? menuItem =
-                _menuMain.findItemByName("checkbox3") as MenuItemCheckbox?;
-            await menuItem?.setCheck(!menuItem.checked);
+            await menuItem.setCheck(!menuItem.checked);
             debugPrint(
-                "click name: ${menuItem?.name} menuItemId: ${menuItem?.menuItemId} label: ${menuItem?.label} checked: ${menuItem?.checked}");
+                "click name: ${menuItem.name} menuItemId: ${menuItem.menuItemId} label: ${menuItem.label} checked: ${menuItem.checked}");
           },
         ),
         MenuSeparator(),
         MenuItemLable(
-          label: 'Exit',
-          onClicked: _appWindow.close,
-        ),
+            label: 'Exit', onClicked: (menuItem) => _appWindow.close()),
       ],
     );
 
     await _menuSimple.buildFrom([
       MenuItemLable(
         label: 'Change Context Menu',
-        onClicked: () {
+        image: getImagePath('app_icon'),
+        onClicked: (menuItem) {
           debugPrint("Change Context Menu");
 
           _toogleMenu = !_toogleMenu;
@@ -224,11 +258,18 @@ class _MyAppState extends State<MyApp> {
         },
       ),
       MenuSeparator(),
-      MenuItemLable(label: 'Show', onClicked: _appWindow.show),
-      MenuItemLable(label: 'Hide', onClicked: _appWindow.hide),
+      MenuItemLable(
+          label: 'Show',
+          image: getImagePath('app_icon'),
+          onClicked: (menuItem) => _appWindow.show()),
+      MenuItemLable(
+          label: 'Hide',
+          image: getImagePath('app_icon'),
+          onClicked: (menuItem) => _appWindow.hide()),
       MenuItemLable(
         label: 'Exit',
-        onClicked: _appWindow.close,
+        image: getImagePath('app_icon'),
+        onClicked: (menuItem) => _appWindow.close(),
       ),
     ]);
 
@@ -244,9 +285,15 @@ class _MyAppState extends State<MyApp> {
           color: const Color(0xFF805306),
           width: 1,
           child: Row(
-            children: const [
-              LeftSide(),
-              RightSide(),
+            children: [
+              LeftSide(
+                systemTray: _systemTray,
+                menu: _menuMain,
+              ),
+              RightSide(
+                systemTray: _systemTray,
+                menu: _menuMain,
+              ),
             ],
           ),
         ),
@@ -259,7 +306,14 @@ const backgroundStartColor = Color(0xFFFFD500);
 const backgroundEndColor = Color(0xFFF6A00C);
 
 class LeftSide extends StatelessWidget {
-  const LeftSide({Key? key}) : super(key: key);
+  final SystemTray systemTray;
+  final Menu menu;
+
+  const LeftSide({
+    Key? key,
+    required this.systemTray,
+    required this.menu,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -282,8 +336,41 @@ class LeftSide extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: Container(),
-            )
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Divider(
+                      height: 2,
+                      color: Colors.transparent,
+                    ),
+                    MaterialButton(
+                      color: Colors.blue,
+                      textColor: Colors.white,
+                      child: const Text("InitSystemTray"),
+                      onPressed: () async {
+                        if (await systemTray.initSystemTray(
+                            iconPath: getTrayImagePath('app_icon'))) {
+                          systemTray.setTitle("system tray2");
+                          systemTray.setToolTip(
+                              "How to use system tray with Flutter");
+                          systemTray.setContextMenu(menu);
+                        }
+                      },
+                    ),
+                    const Divider(
+                      height: 2,
+                      color: Colors.transparent,
+                    ),
+                    MaterialButton(
+                      color: Colors.blue,
+                      textColor: Colors.white,
+                      child: const Text("DestorySystemTray"),
+                      onPressed: () async {
+                        await systemTray.destroy();
+                      },
+                    ),
+                  ]),
+            ),
           ],
         ),
       ),
@@ -292,7 +379,14 @@ class LeftSide extends StatelessWidget {
 }
 
 class RightSide extends StatelessWidget {
-  const RightSide({Key? key}) : super(key: key);
+  final SystemTray systemTray;
+  final Menu menu;
+
+  const RightSide({
+    Key? key,
+    required this.systemTray,
+    required this.menu,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

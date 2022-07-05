@@ -1,4 +1,5 @@
 #include "menu.h"
+
 #include <winuser.h>
 
 #include <memory>
@@ -8,13 +9,14 @@
 
 namespace {
 
-constexpr char kChannelName[] = "flutter/system_tray/menu_manager";
+constexpr int kDefaultIconSizeWidth = 32;
+constexpr int kDefaultIconSizeHeight = 32;
 
 constexpr char kMenuIdKey[] = "menu_id";
 constexpr char kMenuItemIdKey[] = "menu_item_id";
+constexpr char kMenuListKey[] = "menu_list";
 constexpr char kIdKey[] = "id";
 constexpr char kTypeKey[] = "type";
-constexpr char kCheckboxKey[] = "checkbox";
 constexpr char kSeparatorKey[] = "separator";
 constexpr char kSubMenuKey[] = "submenu";
 constexpr char kLabelKey[] = "label";
@@ -26,12 +28,183 @@ constexpr char kMenuItemSelectedCallbackMethod[] = "MenuItemSelectedCallback";
 
 }  // namespace
 
-Menu::Menu(std::weak_ptr<flutter::MethodChannel<>> channel, int menu_id)
+Menu::Menu(std::weak_ptr<flutter::MethodChannel<>> channel,
+           int menu_id) noexcept
     : channel_(channel), menu_id_(menu_id) {}
 
 Menu::~Menu() noexcept {
-  printf("~Menu this: %p\n", this);
   DestroyContextMenu();
+}
+
+bool Menu::CreateContextMenu(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call) {
+  bool result = false;
+  do {
+    const auto* params =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!params) {
+      break;
+    }
+
+    const auto* list = std::get_if<flutter::EncodableList>(
+        utils::ValueOrNull(*params, kMenuListKey));
+    if (!list) {
+      break;
+    }
+
+    if (!CreateContextMenu(*list)) {
+      break;
+    }
+
+    result = true;
+
+  } while (false);
+
+  return result;
+}
+
+void Menu::SetLable(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    const auto* params =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!params) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* menu_item_id =
+        std::get_if<int>(utils::ValueOrNull(*params, kMenuItemIdKey));
+    if (!menu_item_id) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* label =
+        std::get_if<std::string>(utils::ValueOrNull(*params, kLabelKey));
+    if (!label) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    SetLable(*menu_item_id, *label);
+
+    result.Success(flutter::EncodableValue(true));
+    return;
+
+  } while (false);
+}
+
+void Menu::SetImage(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    const auto* params =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!params) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* menu_item_id =
+        std::get_if<int>(utils::ValueOrNull(*params, kMenuItemIdKey));
+    if (!menu_item_id) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* image =
+        std::get_if<std::string>(utils::ValueOrNull(*params, kImageKey));
+    if (!image) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    SetImage(*menu_item_id, *image);
+
+    result.Success(flutter::EncodableValue(true));
+    return;
+
+  } while (false);
+}
+
+void Menu::SetEnable(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    const auto* params =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!params) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* menu_item_id =
+        std::get_if<int>(utils::ValueOrNull(*params, kMenuItemIdKey));
+    if (!menu_item_id) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* enabled =
+        std::get_if<bool>(utils::ValueOrNull(*params, kEnabledKey));
+    if (!enabled) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    SetEnable(*menu_item_id, *enabled);
+
+    result.Success(flutter::EncodableValue(true));
+    return;
+
+  } while (false);
+}
+
+void Menu::SetCheck(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    const auto* params =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!params) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* menu_item_id =
+        std::get_if<int>(utils::ValueOrNull(*params, kMenuItemIdKey));
+    if (!menu_item_id) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    const auto* checked =
+        std::get_if<bool>(utils::ValueOrNull(*params, kCheckedKey));
+    if (!checked) {
+      result.Error(errors::kBadArgumentsError, "",
+                   flutter::EncodableValue(false));
+      break;
+    }
+
+    SetCheck(*menu_item_id, *checked);
+
+    result.Success(flutter::EncodableValue(true));
+    return;
+
+  } while (false);
 }
 
 bool Menu::CreateContextMenu(const flutter::EncodableList& representation) {
@@ -81,8 +254,6 @@ void Menu::PopupContextMenu(HWND window, const POINT& pt) {
 }
 
 void Menu::SetLable(int menu_item_id, const std::string& label) {
-  printf("SetLable menu_item_id:%d text:%s\n", menu_item_id, label.c_str());
-
   std::wstring label_u = utils::Utf16FromUtf8(label);
 
   MENUITEMINFO mii = {sizeof(MENUITEMINFO)};
@@ -92,12 +263,24 @@ void Menu::SetLable(int menu_item_id, const std::string& label) {
   SetMenuItemInfo(GetMenu(), static_cast<UINT>(menu_item_id), FALSE, &mii);
 }
 
-void Menu::SetImage(int menu_item_id, const std::string& image) {}
+void Menu::SetImage(int menu_item_id, const std::string& image) {
+  std::wstring image_u = utils::Utf16FromUtf8(image);
+
+  int x = /*GetSystemMetrics(SM_CXICON)*/ kDefaultIconSizeWidth;
+  int y = /*GetSystemMetrics(SM_CYICON)*/ kDefaultIconSizeHeight;
+
+  MENUITEMINFO mii = {sizeof(MENUITEMINFO)};
+  mii.fMask = MIIM_BITMAP;
+  mii.hbmpItem = static_cast<HBITMAP>(
+      LoadImage(nullptr, image_u.c_str(), IMAGE_BITMAP, x, y, LR_LOADFROMFILE));
+
+  SetMenuItemInfo(GetMenu(), static_cast<UINT>(menu_item_id), FALSE, &mii);
+}
 
 void Menu::SetEnable(int menu_item_id, bool enabled) {
   MENUITEMINFO mii = {sizeof(MENUITEMINFO)};
   mii.fMask = MIIM_STATE;
-  mii.fState = (enabled ? MFS_ENABLED : MFS_GRAYED);
+  mii.fState = (enabled ? MFS_ENABLED : MFS_DISABLED);
   SetMenuItemInfo(GetMenu(), static_cast<UINT>(menu_item_id), FALSE, &mii);
 }
 
@@ -137,6 +320,10 @@ bool Menu::ValueToMenuItem(HMENU menu,
   if (type->compare(kSeparatorKey) == 0) {
     AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
   } else {
+    const auto* id =
+        std::get_if<int32_t>(utils::ValueOrNull(representation, kIdKey));
+    UINT menu_item_id = id ? *id : -1;
+
     const auto* label =
         std::get_if<std::string>(utils::ValueOrNull(representation, kLabelKey));
     std::wstring label_u(label ? utils::Utf16FromUtf8(*label) : L"");
@@ -147,33 +334,54 @@ bool Menu::ValueToMenuItem(HMENU menu,
     const auto* enabled =
         std::get_if<bool>(utils::ValueOrNull(representation, kEnabledKey));
 
-    if (type->compare(kSubMenuKey) == 0) {
-      UINT flags = MF_STRING | MF_POPUP;
-      flags |= (enabled == nullptr || *enabled) ? MF_ENABLED : MF_GRAYED;
+    MENUITEMINFO mii = {sizeof(MENUITEMINFO)};
 
+    if (id) {
+      mii.fMask |= MIIM_ID;
+      mii.wID = menu_item_id;
+    }
+
+    if (enabled) {
+      mii.fMask |= MIIM_STATE;
+      mii.fState = *enabled ? MFS_ENABLED : MFS_DISABLED;
+    }
+
+    if (label) {
+      mii.fMask |= MIIM_STRING;
+      mii.dwTypeData = label_u.data();
+      mii.cch = static_cast<UINT>(label_u.length());
+    }
+
+    if (image) {
+      std::wstring image_u = utils::Utf16FromUtf8(*image);
+
+      int x = /*GetSystemMetrics(SM_CXICON)*/ kDefaultIconSizeWidth;
+      int y = /*GetSystemMetrics(SM_CYICON)*/ kDefaultIconSizeHeight;
+
+      // printf("cxicon: %d, cyicon: %d, image:%s\n", x, y, image->c_str());
+
+      mii.fMask |= MIIM_BITMAP;
+      mii.hbmpItem = static_cast<HBITMAP>(LoadImage(
+          nullptr, image_u.c_str(), IMAGE_BITMAP, x, y, LR_LOADFROMFILE));
+    }
+
+    mii.fMask |= MIIM_DATA;
+    mii.dwItemData = static_cast<ULONG_PTR>(MenuId());
+
+    if (type->compare(kSubMenuKey) == 0) {
       const auto* children = std::get_if<flutter::EncodableList>(
           utils::ValueOrNull(representation, kSubMenuKey));
       if (children) {
         HMENU submenu = ::CreatePopupMenu();
         if (ValueToMenu(submenu, *children)) {
-          AppendMenu(menu, flags, reinterpret_cast<UINT_PTR>(submenu),
-                     label_u.c_str());
+          mii.fMask |= MIIM_SUBMENU;
+          mii.hSubMenu = submenu;
+          InsertMenuItem(menu, menu_item_id, FALSE, &mii);
         } else {
           DestroyMenu(submenu);
         }
       }
     } else {
-      const auto* menu_id =
-          std::get_if<int32_t>(utils::ValueOrNull(representation, kIdKey));
-      UINT item_id = menu_id ? *menu_id : 0;
-
-      MENUITEMINFO mii = {sizeof(MENUITEMINFO)};
-      mii.fMask = MIIM_ID | MIIM_STRING | MIIM_DATA;
-      mii.wID = item_id;
-      mii.dwTypeData = label_u.data();
-      mii.cch = static_cast<UINT>(label_u.length());
-      mii.dwItemData = static_cast<ULONG_PTR>(MenuId());
-
       const auto* checked =
           std::get_if<bool>(utils::ValueOrNull(representation, kCheckedKey));
       if (checked) {
@@ -181,20 +389,7 @@ bool Menu::ValueToMenuItem(HMENU menu,
         mii.fState = *checked ? MFS_CHECKED : MFS_UNCHECKED;
       }
 
-      if (image) {
-        std::wstring image_u = utils::Utf16FromUtf8(*image);
-
-        int x = GetSystemMetrics(SM_CXICON);
-        int y = GetSystemMetrics(SM_CYICON);
-
-        printf("cxicon: %d, cyicon: %d\n", x, y);
-
-        mii.fMask |= MIIM_BITMAP;
-        mii.hbmpItem = static_cast<HBITMAP>(LoadImage(
-            nullptr, image_u.c_str(), IMAGE_BITMAP, 32, 32, LR_LOADFROMFILE));
-      }
-
-      InsertMenuItem(menu, item_id, FALSE, &mii);
+      InsertMenuItem(menu, menu_item_id, FALSE, &mii);
     }
   }
 

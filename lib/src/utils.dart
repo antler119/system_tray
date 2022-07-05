@@ -5,23 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' show dirname, joinAll;
 
 class Utils {
-  static String? getIcon(String? assetPath) {
-    if (assetPath == null) {
-      return null;
-    }
-
-    if (assetPath.isEmpty == true) {
-      return '';
-    }
-
-    return joinAll([
-      dirname(Platform.resolvedExecutable),
-      'data/flutter_assets',
-      assetPath,
-    ]);
-  }
-
-  static Future<String?> getIcon2(String? assetPath) async {
+  static Future<String?> getIcon(String? assetPath) async {
     if (assetPath == null) {
       return null;
     }

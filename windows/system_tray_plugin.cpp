@@ -30,14 +30,14 @@ class SystemTrayPlugin : public flutter::Plugin {
   flutter::PluginRegistrarWindows* registrar_ = nullptr;
 
   std::unique_ptr<AppWindow> app_window_;
-  std::unique_ptr<Tray> tray_;
   std::shared_ptr<MenuManager> menu_manager_;
+  std::unique_ptr<Tray> tray_;
 };
 
 SystemTrayPlugin::SystemTrayPlugin(flutter::PluginRegistrarWindows* registrar)
     : registrar_(registrar) {
   app_window_ = std::make_unique<AppWindow>(registrar_);
-  menu_manager_ = std::make_unique<MenuManager>(registrar_);
+  menu_manager_ = std::make_shared<MenuManager>(registrar_);
   tray_ = std::make_unique<Tray>(registrar_, menu_manager_);
 }
 

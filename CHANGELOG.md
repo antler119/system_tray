@@ -1,8 +1,9 @@
 ## 2.0.0
 
 * [Feature] support MenuItemCheckbox
-* [Feature] support add menu item with image
+* [Feature] support add menu item with image (except linux)
 * [Feature] support modify MenuItem property
+* [Feature] support destroy tray
 * [Feature] support multiple context menu
 
 ## 0.1.1

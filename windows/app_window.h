@@ -11,7 +11,7 @@
 
 class AppWindow {
  public:
-  AppWindow(flutter::PluginRegistrarWindows* registrar);
+  AppWindow(flutter::PluginRegistrarWindows* registrar) noexcept;
   ~AppWindow() noexcept;
 
  protected:
