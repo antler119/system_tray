@@ -2,6 +2,7 @@
 
 [![Pub](https://img.shields.io/pub/v/system_tray.svg)](https://pub.dartlang.org/packages/system_tray)
 
+
 A [Flutter package](https://github.com/antler119/system_tray.git) that enables support for system tray menu for desktop flutter apps. **on Windows, macOS, and Linux**.
 
 ## Install
@@ -11,7 +12,7 @@ In the pubspec.yaml of your flutter project, add the following dependency:
 ```yaml
 dependencies:
   ...
-  system_tray: ^2.0.0
+  system_tray: ^2.0.1
 ```
 
 In your library add the following import:

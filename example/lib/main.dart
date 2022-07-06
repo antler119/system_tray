@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> {
             debugPrint("Start flash tray icon");
 
             _timer ??= Timer.periodic(
-              const Duration(milliseconds: 1000),
+              const Duration(milliseconds: 500),
               (timer) {
                 _toogleTrayIcon = !_toogleTrayIcon;
                 _systemTray.setImage(
@@ -160,6 +160,7 @@ class _MyAppState extends State<MyApp> {
                 ),
                 MenuItemLable(
                   label: 'setToolTip',
+                  image: getImagePath('darts_icon'),
                   onClicked: (menuItem) {
                     final String text = WordPair.random().asPascalCase;
                     debugPrint("click 'setToolTip' : $text");
@@ -284,13 +285,10 @@ class _MyAppState extends State<MyApp> {
         body: WindowBorder(
           color: const Color(0xFF805306),
           width: 1,
-          child: Row(
+          child: Column(
             children: [
-              LeftSide(
-                systemTray: _systemTray,
-                menu: _menuMain,
-              ),
-              RightSide(
+              const TitleBar(),
+              ContentBody(
                 systemTray: _systemTray,
                 menu: _menuMain,
               ),
@@ -305,72 +303,26 @@ class _MyAppState extends State<MyApp> {
 const backgroundStartColor = Color(0xFFFFD500);
 const backgroundEndColor = Color(0xFFF6A00C);
 
-class LeftSide extends StatelessWidget {
-  final SystemTray systemTray;
-  final Menu menu;
-
-  const LeftSide({
-    Key? key,
-    required this.systemTray,
-    required this.menu,
-  }) : super(key: key);
+class TitleBar extends StatelessWidget {
+  const TitleBar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 200,
+    return WindowTitleBarBox(
       child: Container(
-        color: const Color(0xFFFFFFFF),
-        child: Column(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [backgroundStartColor, backgroundEndColor],
+              stops: [0.0, 1.0]),
+        ),
+        child: Row(
           children: [
-            WindowTitleBarBox(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [backgroundStartColor, backgroundEndColor],
-                      stops: [0.0, 1.0]),
-                ),
-                child: MoveWindow(),
-              ),
-            ),
             Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Divider(
-                      height: 2,
-                      color: Colors.transparent,
-                    ),
-                    MaterialButton(
-                      color: Colors.blue,
-                      textColor: Colors.white,
-                      child: const Text("InitSystemTray"),
-                      onPressed: () async {
-                        if (await systemTray.initSystemTray(
-                            iconPath: getTrayImagePath('app_icon'))) {
-                          systemTray.setTitle("system tray2");
-                          systemTray.setToolTip(
-                              "How to use system tray with Flutter");
-                          systemTray.setContextMenu(menu);
-                        }
-                      },
-                    ),
-                    const Divider(
-                      height: 2,
-                      color: Colors.transparent,
-                    ),
-                    MaterialButton(
-                      color: Colors.blue,
-                      textColor: Colors.white,
-                      child: const Text("DestorySystemTray"),
-                      onPressed: () async {
-                        await systemTray.destroy();
-                      },
-                    ),
-                  ]),
+              child: MoveWindow(),
             ),
+            const WindowButtons()
           ],
         ),
       ),
@@ -378,11 +330,11 @@ class LeftSide extends StatelessWidget {
   }
 }
 
-class RightSide extends StatelessWidget {
+class ContentBody extends StatelessWidget {
   final SystemTray systemTray;
   final Menu menu;
 
-  const RightSide({
+  const ContentBody({
     Key? key,
     required this.systemTray,
     required this.menu,
@@ -393,23 +345,77 @@ class RightSide extends StatelessWidget {
     return Expanded(
       child: Container(
         color: const Color(0xFFFFFFFF),
-        child: Column(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
           children: [
-            WindowTitleBarBox(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [backgroundStartColor, backgroundEndColor],
-                      stops: [0.0, 1.0]),
-                ),
-                child: Row(
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: MoveWindow(),
+                    const Text(
+                      'systemTray.initSystemTray',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    const WindowButtons()
+                    const Text(
+                      'Create system tray.',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    ElevatedButton(
+                      child: const Text("initSystemTray"),
+                      onPressed: () async {
+                        if (await systemTray.initSystemTray(
+                            iconPath: getTrayImagePath('app_icon'))) {
+                          systemTray.setTitle("new system tray");
+                          systemTray.setToolTip(
+                              "How to use system tray with Flutter");
+                          systemTray.setContextMenu(menu);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'systemTray.destroy',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Text(
+                      'Destroy system tray.',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    ElevatedButton(
+                      child: const Text("destroy"),
+                      onPressed: () async {
+                        await systemTray.destroy();
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -445,7 +451,28 @@ class WindowButtons extends StatelessWidget {
         MaximizeWindowButton(colors: buttonColors),
         CloseWindowButton(
           colors: closeButtonColors,
-          onPressed: () => appWindow.close(),
+          onPressed: () {
+            showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('Exit Program?'),
+                  content: const Text(
+                      ('The window will be hidden, to exit the program you can use the system menu.')),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('OK'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        appWindow.hide();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
         ),
       ],
     );
