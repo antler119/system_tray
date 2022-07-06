@@ -1,3 +1,7 @@
+## 2.0.1
+
+* [Feature] Refactor demo
+
 ## 2.0.0
 
 * [Feature] support MenuItemCheckbox
