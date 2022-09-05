@@ -49,7 +49,7 @@ class Menu: NSObject {
     return result
   }
 
-  func setLable(_ call: FlutterMethodCall, _ result: FlutterResult) {
+  func setLabel(_ call: FlutterMethodCall, _ result: FlutterResult) {
     repeat {
       let arguments = call.arguments as! [String: Any]
       let menuItemId = arguments[kMenuItemIdKey] as? Int
@@ -59,7 +59,7 @@ class Menu: NSObject {
         break
       }
 
-      setLable(menuItemId: menuItemId!, lable: label!)
+      setLabel(menuItemId: menuItemId!, label: label!)
 
       result(true)
       return
@@ -143,8 +143,8 @@ class Menu: NSObject {
     return nsMenu
   }
 
-  func setLable(menuItemId: Int, lable: String) {
-    self.nsMenu?.item(withTag: menuItemId)?.title = lable
+  func setLabel(menuItemId: Int, label: String) {
+    self.nsMenu?.item(withTag: menuItemId)?.title = label
   }
 
   func setImage(menuItemId: Int, base64Icon: String?) {

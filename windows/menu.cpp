@@ -63,7 +63,7 @@ bool Menu::CreateContextMenu(
   return result;
 }
 
-void Menu::SetLable(
+void Menu::SetLabel(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     flutter::MethodResult<flutter::EncodableValue>& result) {
   do {
@@ -91,7 +91,7 @@ void Menu::SetLable(
       break;
     }
 
-    SetLable(*menu_item_id, *label);
+    SetLabel(*menu_item_id, *label);
 
     result.Success(flutter::EncodableValue(true));
     return;
@@ -253,7 +253,7 @@ void Menu::PopupContextMenu(HWND window, const POINT& pt) {
   }
 }
 
-void Menu::SetLable(int menu_item_id, const std::string& label) {
+void Menu::SetLabel(int menu_item_id, const std::string& label) {
   std::wstring label_u = utils::Utf16FromUtf8(label);
 
   MENUITEMINFO mii = {sizeof(MENUITEMINFO)};

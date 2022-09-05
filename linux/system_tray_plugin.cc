@@ -56,7 +56,7 @@ static void system_tray_plugin_handle_method_call(SystemTrayPlugin* self,
       strcmp(method, kCloseAppWindow) == 0) {
     self->app_window->handle_method_call(method_call);
   } else if (strcmp(method, kCreateContextMenu) == 0 ||
-             strcmp(method, kSetLable) == 0 || strcmp(method, kSetImage) == 0 ||
+             strcmp(method, kSetLabel) == 0 || strcmp(method, kSetImage) == 0 ||
              strcmp(method, kSetEnable) == 0 ||
              strcmp(method, kSetCheck) == 0) {
     self->menu_manager->handle_method_call(method_call);

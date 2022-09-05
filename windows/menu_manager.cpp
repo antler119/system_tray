@@ -11,7 +11,7 @@ namespace {
 constexpr char kChannelName[] = "flutter/system_tray/menu_manager";
 
 constexpr char kCreateContextMenu[] = "CreateContextMenu";
-constexpr char kSetLable[] = "SetLable";
+constexpr char kSetLabel[] = "SetLabel";
 constexpr char kSetImage[] = "SetImage";
 constexpr char kSetEnable[] = "SetEnable";
 constexpr char kSetCheck[] = "SetCheck";
@@ -47,8 +47,8 @@ void MenuManager::HandleMethodCall(
 
   if (method_call.method_name().compare(kCreateContextMenu) == 0) {
     CreateContextMenu(method_call, *result);
-  } else if (method_call.method_name().compare(kSetLable) == 0) {
-    SetLable(method_call, *result);
+  } else if (method_call.method_name().compare(kSetLabel) == 0) {
+    SetLabel(method_call, *result);
   } else if (method_call.method_name().compare(kSetImage) == 0) {
     SetImage(method_call, *result);
   } else if (method_call.method_name().compare(kSetEnable) == 0) {
@@ -100,7 +100,7 @@ void MenuManager::CreateContextMenu(
   } while (false);
 }
 
-void MenuManager::SetLable(
+void MenuManager::SetLabel(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     flutter::MethodResult<flutter::EncodableValue>& result) {
   do {
@@ -110,7 +110,7 @@ void MenuManager::SetLable(
       break;
     }
 
-    menu->SetLable(method_call, result);
+    menu->SetLabel(method_call, result);
     return;
 
   } while (false);

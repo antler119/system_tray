@@ -30,7 +30,7 @@ class MenuManager {
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
 
-  void SetLable(const flutter::MethodCall<flutter::EncodableValue>& method_call,
+  void SetLabel(const flutter::MethodCall<flutter::EncodableValue>& method_call,
                 flutter::MethodResult<flutter::EncodableValue>& result);
 
   void SetImage(const flutter::MethodCall<flutter::EncodableValue>& method_call,

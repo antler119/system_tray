@@ -2,7 +2,7 @@ import Cocoa
 import FlutterMacOS
 
 let kCreateContextMenu = "CreateContextMenu"
-let kSetLable = "SetLable"
+let kSetLabel = "SetLabel"
 let kSetImage = "SetImage"
 let kSetEnable = "SetEnable"
 let kSetCheck = "SetCheck"
@@ -23,8 +23,8 @@ class MenuManager: NSObject {
     switch call.method {
     case kCreateContextMenu:
       createContextMenu(call, result)
-    case kSetLable:
-      setLable(call, result)
+    case kSetLabel:
+      setLabel(call, result)
     case kSetImage:
       setImage(call, result)
     case kSetEnable:
@@ -61,14 +61,14 @@ class MenuManager: NSObject {
     result(false)
   }
 
-  func setLable(_ call: FlutterMethodCall, _ result: FlutterResult) {
+  func setLabel(_ call: FlutterMethodCall, _ result: FlutterResult) {
     repeat {
       let menu = getMenu(call)
       if menu == nil {
         break
       }
 
-      menu!.setLable(call, result)
+      menu!.setLabel(call, result)
       return
     } while false
 

@@ -18,7 +18,7 @@ class Menu {
   bool CreateContextMenu(
       const flutter::MethodCall<flutter::EncodableValue>& method_call);
 
-  void SetLable(const flutter::MethodCall<flutter::EncodableValue>& method_call,
+  void SetLabel(const flutter::MethodCall<flutter::EncodableValue>& method_call,
                 flutter::MethodResult<flutter::EncodableValue>& result);
 
   void SetImage(const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -42,7 +42,7 @@ class Menu {
   bool CreateContextMenu(const flutter::EncodableList& representation);
   void DestroyContextMenu();
 
-  void SetLable(int menu_item_id, const std::string& label);
+  void SetLabel(int menu_item_id, const std::string& label);
   void SetImage(int menu_item_id, const std::string& image);
   void SetEnable(int menu_item_id, bool enabled);
   void SetCheck(int menu_item_id, bool checked);

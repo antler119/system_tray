@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:system_tray/src/utils.dart';
 
-const String _kSetLable = "SetLable";
+const String _kSetLabel = "SetLabel";
 const String _kSetImage = "SetImage";
 const String _kSetEnable = "SetEnable";
 const String _kSetCheck = "SetCheck";
@@ -10,7 +10,7 @@ const String _kMenuIdKey = 'menu_id';
 const String _kMenuItemIdKey = 'menu_item_id';
 const String _kIdKey = 'id';
 const String _kTypeKey = 'type';
-const String _kMenuTypeLabel = 'lable';
+const String _kMenuTypeLabel = 'label';
 const String _kMenuTypeCheckbox = 'checkbox';
 const String _kMenuTypeSubMenu = 'submenu';
 const String _kMenuTypeSeparator = 'separator';
@@ -39,8 +39,8 @@ abstract class MenuItem {
     return <String, dynamic>{};
   }
 
-  Future<void> setLable(String label) async {
-    bool result = await channel?.invokeMethod(_kSetLable, {
+  Future<void> setLabel(String label) async {
+    bool result = await channel?.invokeMethod(_kSetLabel, {
       _kMenuIdKey: menuId ?? -1,
       _kMenuItemIdKey: menuItemId ?? -1,
       _kLabelKey: label,
@@ -111,8 +111,8 @@ abstract class MenuItem {
 }
 
 /// A standard menu item, with no submenus.
-class MenuItemLable extends MenuItem {
-  MenuItemLable({
+class MenuItemLabel extends MenuItem {
+  MenuItemLabel({
     required String label,
     String? image,
     String? name,
