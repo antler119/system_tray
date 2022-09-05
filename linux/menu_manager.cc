@@ -4,7 +4,7 @@
 #include "menu.h"
 
 constexpr char kCreateContextMenu[] = "CreateContextMenu";
-constexpr char kSetLable[] = "SetLable";
+constexpr char kSetLabel[] = "SetLabel";
 constexpr char kSetImage[] = "SetImage";
 constexpr char kSetEnable[] = "SetEnable";
 constexpr char kSetCheck[] = "SetCheck";
@@ -32,7 +32,7 @@ void MenuManager::handle_method_call(FlMethodCall* method_call) {
 
   if (strcmp(method, kCreateContextMenu) == 0) {
     response = create_context_menu(args);
-  } else if (strcmp(method, kSetLable) == 0) {
+  } else if (strcmp(method, kSetLabel) == 0) {
     response = set_label(args);
   } else if (strcmp(method, kSetImage) == 0) {
     response = set_image(args);

@@ -82,7 +82,7 @@ class _MyAppState extends State<MyApp> {
 
     await _menuMain.buildFrom(
       [
-        MenuItemLable(
+        MenuItemLabel(
           label: 'Change Context Menu',
           image: getImagePath('darts_icon'),
           onClicked: (menuItem) {
@@ -93,15 +93,15 @@ class _MyAppState extends State<MyApp> {
           },
         ),
         MenuSeparator(),
-        MenuItemLable(
+        MenuItemLabel(
             label: 'Show',
             image: getImagePath('darts_icon'),
             onClicked: (menuItem) => _appWindow.show()),
-        MenuItemLable(
+        MenuItemLabel(
             label: 'Hide',
             image: getImagePath('darts_icon'),
             onClicked: (menuItem) => _appWindow.hide()),
-        MenuItemLable(
+        MenuItemLabel(
           label: 'Start flash tray icon',
           image: getImagePath('darts_icon'),
           onClicked: (menuItem) {
@@ -117,7 +117,7 @@ class _MyAppState extends State<MyApp> {
             );
           },
         ),
-        MenuItemLable(
+        MenuItemLabel(
           label: 'Stop flash tray icon',
           image: getImagePath('darts_icon'),
           onClicked: (menuItem) {
@@ -138,7 +138,7 @@ class _MyAppState extends State<MyApp> {
               label: "setSystemTrayInfo",
               image: getImagePath('darts_icon'),
               children: [
-                MenuItemLable(
+                MenuItemLabel(
                   label: 'setTitle',
                   image: getImagePath('darts_icon'),
                   onClicked: (menuItem) {
@@ -147,7 +147,7 @@ class _MyAppState extends State<MyApp> {
                     _systemTray.setTitle(text);
                   },
                 ),
-                MenuItemLable(
+                MenuItemLabel(
                   label: 'setImage',
                   image: getImagePath('gift_icon'),
                   onClicked: (menuItem) {
@@ -158,7 +158,7 @@ class _MyAppState extends State<MyApp> {
                     _systemTray.setImage(path);
                   },
                 ),
-                MenuItemLable(
+                MenuItemLabel(
                   label: 'setToolTip',
                   image: getImagePath('darts_icon'),
                   onClicked: (menuItem) {
@@ -167,7 +167,7 @@ class _MyAppState extends State<MyApp> {
                     _systemTray.setToolTip(text);
                   },
                 ),
-                MenuItemLable(
+                MenuItemLabel(
                   label: 'getTitle',
                   image: getImagePath('gift_icon'),
                   onClicked: (menuItem) async {
@@ -177,7 +177,7 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
             ),
-            MenuItemLable(
+            MenuItemLabel(
                 label: 'disabled Item',
                 name: 'disableItem',
                 image: getImagePath('gift_icon'),
@@ -185,7 +185,7 @@ class _MyAppState extends State<MyApp> {
           ],
         ),
         MenuSeparator(),
-        MenuItemLable(
+        MenuItemLabel(
           label: 'Set Item Image',
           onClicked: (menuItem) async {
             debugPrint("click 'SetItemImage'");
@@ -224,7 +224,7 @@ class _MyAppState extends State<MyApp> {
             debugPrint("click 'Checkbox 2'");
 
             await menuItem.setCheck(!menuItem.checked);
-            await menuItem.setLable(WordPair.random().asPascalCase);
+            await menuItem.setLabel(WordPair.random().asPascalCase);
             debugPrint(
                 "click name: ${menuItem.name} menuItemId: ${menuItem.menuItemId} label: ${menuItem.label} checked: ${menuItem.checked}");
           },
@@ -242,13 +242,13 @@ class _MyAppState extends State<MyApp> {
           },
         ),
         MenuSeparator(),
-        MenuItemLable(
+        MenuItemLabel(
             label: 'Exit', onClicked: (menuItem) => _appWindow.close()),
       ],
     );
 
     await _menuSimple.buildFrom([
-      MenuItemLable(
+      MenuItemLabel(
         label: 'Change Context Menu',
         image: getImagePath('app_icon'),
         onClicked: (menuItem) {
@@ -259,15 +259,15 @@ class _MyAppState extends State<MyApp> {
         },
       ),
       MenuSeparator(),
-      MenuItemLable(
+      MenuItemLabel(
           label: 'Show',
           image: getImagePath('app_icon'),
           onClicked: (menuItem) => _appWindow.show()),
-      MenuItemLable(
+      MenuItemLabel(
           label: 'Hide',
           image: getImagePath('app_icon'),
           onClicked: (menuItem) => _appWindow.hide()),
-      MenuItemLable(
+      MenuItemLabel(
         label: 'Exit',
         image: getImagePath('app_icon'),
         onClicked: (menuItem) => _appWindow.close(),

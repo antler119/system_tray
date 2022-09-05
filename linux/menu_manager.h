@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 extern const char kCreateContextMenu[];
-extern const char kSetLable[];
+extern const char kSetLabel[];
 extern const char kSetImage[];
 extern const char kSetEnable[];
 extern const char kSetCheck[];

@@ -39,7 +39,7 @@ public class SystemTrayPlugin: NSObject, FlutterPlugin {
     switch call.method {
     case kInitAppWindow, kShowAppWindow, kHideAppWindow, kCloseAppWindow:
       app_window.handle(call, result: result)
-    case kCreateContextMenu, kSetLable, kSetImage, kSetEnable, kSetCheck:
+    case kCreateContextMenu, kSetLabel, kSetImage, kSetEnable, kSetCheck:
       menu_manager.handle(call, result: result)
     case kInitSystemTray, kSetSystemTrayInfo, kSetContextMenu, kPopupContextMenu, kSetPressedImage,
       kGetTitle, kDestroySystemTray:
