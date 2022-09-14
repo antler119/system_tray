@@ -18,6 +18,25 @@ private let kCheckedKey = "checked"
 
 private let kMenuItemSelectedCallbackMethod = "MenuItemSelectedCallback"
 
+//https://stackoverflow.com/questions/26044110/searching-nsmenuitem-inside-nsmenu-recursively/70609223#70609223
+extension NSMenu {
+  func item(withTag tag: Int, recursive: Bool) -> NSMenuItem? {
+    if !recursive {
+      return item(withTag: tag)
+    }
+    for item in items {
+      if item.tag == tag {
+        return item
+      } else if item.hasSubmenu {
+        if let result = item.submenu!.item(withTag: tag, recursive: recursive) {
+          return result
+        }
+      }
+    }
+    return nil
+  }
+}
+
 class Menu: NSObject {
   var channel: FlutterMethodChannel
   var menuId: Int
@@ -144,7 +163,7 @@ class Menu: NSObject {
   }
 
   func setLabel(menuItemId: Int, label: String) {
-    self.nsMenu?.item(withTag: menuItemId)?.title = label
+    self.nsMenu?.item(withTag: menuItemId, recursive: true)?.title = label
   }
 
   func setImage(menuItemId: Int, base64Icon: String?) {
@@ -158,15 +177,15 @@ class Menu: NSObject {
       }
     }
 
-    self.nsMenu?.item(withTag: menuItemId)?.image = image
+    self.nsMenu?.item(withTag: menuItemId, recursive: true)?.image = image
   }
 
   func setEnable(menuItemId: Int, enabled: Bool) {
-    self.nsMenu?.item(withTag: menuItemId)?.isEnabled = enabled
+    self.nsMenu?.item(withTag: menuItemId, recursive: true)?.isEnabled = enabled
   }
 
   func setCheck(menuItemId: Int, checked: Bool) {
-    self.nsMenu?.item(withTag: menuItemId)?.state = checked ? .on : .off
+    self.nsMenu?.item(withTag: menuItemId, recursive: true)?.state = checked ? .on : .off
   }
 
   func valueToMenu(menu: NSMenu, items: [[String: Any]]) -> Bool {
