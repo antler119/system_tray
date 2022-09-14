@@ -1,3 +1,6 @@
+## 2.0.2
+
+* [Fix] typo: setLable -> setLabel
 ## 2.0.1
 
 * [Feature] Refactor demo

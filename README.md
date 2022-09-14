@@ -12,7 +12,7 @@ In the pubspec.yaml of your flutter project, add the following dependency:
 ```yaml
 dependencies:
   ...
-  system_tray: ^2.0.1
+  system_tray: ^2.0.2
 ```
 
 In your library add the following import:
