@@ -1,6 +1,7 @@
 ## 2.0.2
 
 * [Fix] typo: setLable -> setLabel
+* [Fix] Search for the menuitem recursively
 ## 2.0.1
 
 * [Feature] Refactor demo
