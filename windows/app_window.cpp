@@ -10,6 +10,8 @@ constexpr char kInitAppWindow[] = "InitAppWindow";
 constexpr char kShowAppWindow[] = "ShowAppWindow";
 constexpr char kHideAppWindow[] = "HideAppWindow";
 constexpr char kCloseAppWindow[] = "CloseAppWindow";
+constexpr char kDestroyAppWindow[] = "DestroyAppWindow";
+
 
 }  // namespace
 
@@ -46,6 +48,8 @@ void AppWindow::HandleMethodCall(
     hideAppWindow(method_call, *result);
   } else if (method_call.method_name().compare(kCloseAppWindow) == 0) {
     closeAppWindow(method_call, *result);
+  } else if (method_call.method_name().compare(kDestroyAppWindow) == 0) {
+    destroyAppWindow(method_call, *result);
   } else {
     result->NotImplemented();
   }
@@ -106,6 +110,16 @@ void AppWindow::closeAppWindow(
   } while (false);
 }
 
+void AppWindow::closeAppWindow(
+    const flutter::MethodCall<flutter::EncodableValue>& method_call,
+    flutter::MethodResult<flutter::EncodableValue>& result) {
+  do {
+    destroyAppWindow();
+
+    result.Success(flutter::EncodableValue(true));
+  } while (false);
+}
+
 bool AppWindow::initAppWindow(HWND window, HWND flutter_window) {
   window_ = window;
   flutter_window_ = flutter_window;
@@ -132,6 +146,15 @@ bool AppWindow::closeAppWindow() {
   }
 
   PostMessage(window_, WM_SYSCOMMAND, SC_CLOSE, 0);
+  return true;
+}
+
+bool AppWindow::destroyAppWindow() {
+  if (!IsWindow(window_)) {
+    return false;
+  }
+
+  PostMessage(window_, WM_DESTROY, 0, 0);
   return true;
 }
 

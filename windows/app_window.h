@@ -31,9 +31,14 @@ class AppWindow {
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       flutter::MethodResult<flutter::EncodableValue>& result);
 
+  void destroyAppWindow(
+      const flutter::MethodCall<flutter::EncodableValue>& method_call,
+      flutter::MethodResult<flutter::EncodableValue>& result);
+    
   bool initAppWindow(HWND window, HWND flutter_window);
   bool showAppWindow(bool visible);
   bool closeAppWindow();
+  bool destroyAppWindow();
 
   // Called when a method is called on this plugin's channel from Dart.
   void HandleMethodCall(

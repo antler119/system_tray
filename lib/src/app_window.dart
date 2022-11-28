@@ -8,6 +8,7 @@ const String _kInitAppWindow = "InitAppWindow";
 const String _kShowAppWindow = "ShowAppWindow";
 const String _kHideAppWindow = "HideAppWindow";
 const String _kCloseAppWindow = "CloseAppWindow";
+const String _kDestroyAppWindow = "DestroyAppWindow";
 
 /// Representation of native window
 class AppWindow {
@@ -31,6 +32,11 @@ class AppWindow {
   /// Close native window
   Future<void> close() async {
     await _platformChannel.invokeMethod(_kCloseAppWindow);
+  }
+
+  /// Destroy native window
+  Future<void> destroy() async {
+    await _platformChannel.invokeMethod(_kDestroyAppWindow);
   }
 
   void _init() async {
