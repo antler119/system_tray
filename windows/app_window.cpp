@@ -110,7 +110,7 @@ void AppWindow::closeAppWindow(
   } while (false);
 }
 
-void AppWindow::closeAppWindow(
+void AppWindow::destroyAppWindow(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     flutter::MethodResult<flutter::EncodableValue>& result) {
   do {
