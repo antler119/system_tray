@@ -7,7 +7,6 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 set(PLUGIN_NAME "${PROJECT_NAME}_plugin")
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(APPINDICATOR REQUIRED IMPORTED_TARGET appindicator3-0.1)
 
 add_library(${PLUGIN_NAME} SHARED
   "system_tray_plugin.cc"
@@ -17,6 +16,24 @@ add_library(${PLUGIN_NAME} SHARED
   "tray.cc"
   "errors.cc"
 )
+
+pkg_check_modules(APPINDICATOR IMPORTED_TARGET ayatana-appindicator3-0.1)
+if(APPINDICATOR_FOUND)
+  target_compile_definitions(${PLUGIN_NAME} PRIVATE HAVE_AYATANA)
+else()
+  pkg_check_modules(APPINDICATOR IMPORTED_TARGET appindicator3-0.1)
+endif()
+if(APPINDICATOR_FOUND)
+  target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::APPINDICATOR)
+else() 
+  message(
+    FATAL_ERROR
+    "\n"
+    "The `tray_manager` package requires ayatana-appindicator3-0.1 or appindicator3-0.1. See https://github.com/leanflutter/tray_manager#linux-requirements"
+  )
+endif()
+
+
 apply_standard_settings(${PLUGIN_NAME})
 set_target_properties(${PLUGIN_NAME} PROPERTIES
   CXX_VISIBILITY_PRESET hidden)

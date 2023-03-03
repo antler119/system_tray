@@ -3,7 +3,11 @@
 
 #include <flutter_linux/flutter_linux.h>
 #include <gtk/gtk.h>
+#ifdef HAVE_AYATANA
+#include <libayatana-appindicator/app-indicator.h>
+#else
 #include <libappindicator/app-indicator.h>
+#endif
 #include <memory>
 
 typedef AppIndicator* (*app_indicator_new_fun)(const gchar*,
