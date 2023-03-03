@@ -28,6 +28,12 @@ import 'package:system_tray/system_tray.dart';
 ```bash
 sudo apt-get install appindicator3-0.1 libappindicator3-dev
 ```
+or
+
+```bash
+// For Ubuntu 22.04 or greater
+sudo apt-get install libayatana-appindicator3-dev
+```
 
 ## Example App
 
@@ -156,7 +162,7 @@ sudo apt-get install appindicator3-0.1 libappindicator3-dev
         <th>Linux</th>
     </tr>
     <tr>
-        <td>MenuItemLable</td>
+        <td>MenuItemLabel</td>
         <td></td>
         <td>✔️</td>
         <td>✔️</td>
@@ -204,9 +210,9 @@ Future<void> initSystemTray() async {
   // create context menu
   final Menu menu = Menu();
   await menu.buildFrom([
-    MenuItem(label: 'Show', onClicked: (menuItem) => appWindow.show()),
-    MenuItem(label: 'Hide', onClicked: (menuItem) => appWindow.hide()),
-    MenuItem(label: 'Exit', onClicked: (menuItem) => appWindow.close()),
+    MenuItemLabel(label: 'Show', onClicked: (menuItem) => appWindow.show()),
+    MenuItemLabel(label: 'Hide', onClicked: (menuItem) => appWindow.hide()),
+    MenuItemLabel(label: 'Exit', onClicked: (menuItem) => appWindow.close()),
   ]);
 
   // set context menu
