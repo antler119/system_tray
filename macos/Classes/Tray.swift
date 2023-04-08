@@ -14,6 +14,7 @@ private let kDefaultSizeHeight = 18
 private let kTitleKey = "title"
 private let kIconPathKey = "iconpath"
 private let kToolTipKey = "tooltip"
+private let kIsTemplateKey = "is_template"
 
 private let kSystemTrayEventClick = "click"
 private let kSystemTrayEventRightClick = "right-click"
@@ -83,6 +84,7 @@ class Tray: NSObject, NSMenuDelegate {
     let title = arguments[kTitleKey] as? String
     let base64Icon = arguments[kIconPathKey] as? String
     let toolTip = arguments[kToolTipKey] as? String
+    let isTemplate = arguments[kIsTemplateKey] as? Bool
 
     if statusItem != nil {
       result(false)
@@ -111,6 +113,7 @@ class Tray: NSObject, NSMenuDelegate {
       {
         let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
         itemImage.size = destSize
+        itemImage.isTemplate = isTemplate ?? false
         statusItem?.button?.image = itemImage
         statusItem?.button?.imagePosition = NSControl.ImagePosition.imageLeft
       }
@@ -124,6 +127,7 @@ class Tray: NSObject, NSMenuDelegate {
     let title = arguments[kTitleKey] as? String
     let base64Icon = arguments[kIconPathKey] as? String
     let toolTip = arguments[kToolTipKey] as? String
+    let isTemplate = arguments[kIsTemplateKey] as? Bool
 
     if let toolTip = toolTip {
       statusItem?.button?.toolTip = toolTip
@@ -139,6 +143,7 @@ class Tray: NSObject, NSMenuDelegate {
       {
         let destSize = NSSize(width: kDefaultSizeWidth, height: kDefaultSizeHeight)
         itemImage.size = destSize
+        itemImage.isTemplate = isTemplate ?? false
         statusItem?.button?.image = itemImage
         statusItem?.button?.imagePosition = NSControl.ImagePosition.imageLeft
       } else {
