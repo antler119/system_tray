@@ -21,6 +21,7 @@ const String _kTrayIdKey = "tray_id";
 const String _kTitleKey = "title";
 const String _kIconPathKey = "iconpath";
 const String _kToolTipKey = "tooltip";
+const String _kIsTemplateKey = "is_template";
 
 /// A callback provided to [SystemTray] to handle system tray click event.
 typedef SystemTrayEventCallback = void Function(String eventName);
@@ -41,6 +42,7 @@ class SystemTray {
     required String iconPath,
     String? title,
     String? toolTip,
+    bool isTemplate = false,
   }) async {
     bool value = await _platformChannel.invokeMethod(
       _kInitSystemTray,
@@ -49,6 +51,7 @@ class SystemTray {
         _kTitleKey: title,
         _kIconPathKey: await Utils.getIcon(iconPath),
         _kToolTipKey: toolTip,
+        _kIsTemplateKey: isTemplate,
       },
     );
     return value;
@@ -59,6 +62,7 @@ class SystemTray {
     String? title,
     String? iconPath,
     String? toolTip,
+    bool isTemplate = false,
   }) async {
     bool value = await _platformChannel.invokeMethod(
       _kSetSystemTrayInfo,
@@ -66,14 +70,15 @@ class SystemTray {
         _kTitleKey: title,
         _kIconPathKey: await Utils.getIcon(iconPath),
         _kToolTipKey: toolTip,
+        _kIsTemplateKey: isTemplate,
       },
     );
     return value;
   }
 
   /// (Windows\macOS\Linux) Sets the image associated with this tray icon
-  Future<void> setImage(String image) async {
-    await setSystemTrayInfo(iconPath: image);
+  Future<void> setImage(String image, {bool isTemplate = false}) async {
+    await setSystemTrayInfo(iconPath: image, isTemplate: isTemplate);
   }
 
   /// (Windows\macOS) Sets the hover text for this tray icon.
