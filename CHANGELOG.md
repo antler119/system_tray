@@ -1,3 +1,9 @@
+## 2.0.3
+
+* [Feature] support template icons on macOS
+* [Fix] support for Ubuntu 22.04 or greater
+* [Fix] resolve conflicts with MenuItem
+
 ## 2.0.2
 
 * [Fix] typo: setLable -> setLabel

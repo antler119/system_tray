@@ -20,12 +20,12 @@ const String _kSubMenuKey = 'submenu';
 const String _kEnabledKey = 'enabled';
 const String _kCheckedKey = 'checked';
 
-/// A callback provided to [MenuItem] to handle menu selection.
-typedef MenuItemSelectedCallback = void Function(MenuItem);
+/// A callback provided to [MenuItemBase] to handle menu selection.
+typedef MenuItemSelectedCallback = void Function(MenuItemBase);
 
 /// The base type for an individual menu item that can be shown in a menu.
-abstract class MenuItem {
-  MenuItem(
+abstract class MenuItemBase {
+  MenuItemBase(
     this.type,
     this.label,
     this.image,
@@ -111,7 +111,7 @@ abstract class MenuItem {
 }
 
 /// A standard menu item, with no submenus.
-class MenuItemLabel extends MenuItem {
+class MenuItemLabel extends MenuItemBase {
   MenuItemLabel({
     required String label,
     String? image,
@@ -133,7 +133,7 @@ class MenuItemLabel extends MenuItem {
 }
 
 /// A menu item that serves as a checkbox.
-class MenuItemCheckbox extends MenuItem {
+class MenuItemCheckbox extends MenuItemBase {
   MenuItemCheckbox({
     required String label,
     String? image,
@@ -160,7 +160,7 @@ class MenuItemCheckbox extends MenuItem {
 /// A menu item continaing a submenu.
 ///
 /// The item itself can't be selected, it just displays the submenu.
-class SubMenu extends MenuItem {
+class SubMenu extends MenuItemBase {
   /// Creates a new submenu with the given [label] and [children].
   SubMenu({required String label, required this.children, String? image})
       : super(_kMenuTypeSubMenu, label, image, null, true, false, null);
@@ -178,11 +178,11 @@ class SubMenu extends MenuItem {
   }
 
   /// The menu items contained in the submenu.
-  final List<MenuItem> children;
+  final List<MenuItemBase> children;
 }
 
 /// A menu item that serves as a separator, generally drawn as a line.
-class MenuSeparator extends MenuItem {
+class MenuSeparator extends MenuItemBase {
   /// Creates a new separator item.
   MenuSeparator()
       : super(_kMenuTypeSeparator, '', null, null, true, false, null);

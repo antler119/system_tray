@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide MenuItem;
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'menu_item.dart';
@@ -22,7 +22,7 @@ class Menu {
   /// The ID to use the next time a menu needs an ID assigned.
   static int _nextMenuId = 1;
 
-  List<MenuItem>? _menus;
+  List<MenuItemBase>? _menus;
 
   int _menuId = 1;
 
@@ -40,7 +40,7 @@ class Menu {
     return _menuItemId++;
   }
 
-  Future<bool> buildFrom(List<MenuItem> menus) async {
+  Future<bool> buildFrom(List<MenuItemBase> menus) async {
     _menuId = _nextMenuId++;
     _menus = menus;
     _menuMap.putIfAbsent(_menuId, () => this);
@@ -51,8 +51,9 @@ class Menu {
     return _findItemByName(name, _menus!) as T;
   }
 
-  MenuItem? _findItemByName(final String name, final List<MenuItem> menus) {
-    MenuItem? item;
+  MenuItemBase? _findItemByName(
+      final String name, final List<MenuItemBase> menus) {
+    MenuItemBase? item;
     for (final menuItem in menus) {
       if (menuItem is SubMenu) {
         item = _findItemByName(name, menuItem.children);
@@ -67,8 +68,9 @@ class Menu {
     return item;
   }
 
-  MenuItem? _findItemById(final int? menuItemId, final List<MenuItem>? menus) {
-    MenuItem? item;
+  MenuItemBase? _findItemById(
+      final int? menuItemId, final List<MenuItemBase>? menus) {
+    MenuItemBase? item;
     if (menuItemId != null && menus != null) {
       for (final menuItem in menus) {
         if (menuItem is SubMenu) {
@@ -85,7 +87,7 @@ class Menu {
     return item;
   }
 
-  Future<bool> _createContextMenu(List<MenuItem> menus) async {
+  Future<bool> _createContextMenu(List<MenuItemBase> menus) async {
     bool result = false;
     try {
       _updateInProgress = true;
@@ -104,12 +106,12 @@ class Menu {
     return result;
   }
 
-  Future<void> _channelRepresentationForMenus(List<MenuItem> menus) async {
+  Future<void> _channelRepresentationForMenus(List<MenuItemBase> menus) async {
     _menuItemId = 1;
     await _channelRepresentationForMenu(menus);
   }
 
-  Future<void> _channelRepresentationForMenu(List<MenuItem> menus) async {
+  Future<void> _channelRepresentationForMenu(List<MenuItemBase> menus) async {
     for (final menuItem in menus) {
       menuItem.channel = _platformChannel;
       menuItem.menuId = menuId;
@@ -132,10 +134,10 @@ class Menu {
 
       final int? menuId = methodCall.arguments[_kMenuIdKey];
       final int? menuItemId = methodCall.arguments[_kMenuItemIdKey];
-      final MenuItem? menuItem =
+      final MenuItemBase? menuItem =
           _findItemById(menuItemId, _menuMap[menuId]?._menus);
 
-      debugPrint('MenuItem select menuId:$menuId menuItemId:$menuItemId');
+      debugPrint('MenuItemBase select menuId:$menuId menuItemId:$menuItemId');
 
       final callback = menuItem?.onClicked;
       if (callback != null) {
