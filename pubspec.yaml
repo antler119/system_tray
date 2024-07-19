@@ -1,7 +1,7 @@
 name: system_tray
 description: system_tray that makes it easy to customize tray and work with your Flutter desktop app.
 version: 2.0.3
-repository: https://github.com/antler119/system_tray.git
+repository: https://github.com/antler119/system_tray
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
