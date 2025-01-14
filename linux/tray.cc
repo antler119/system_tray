@@ -52,7 +52,11 @@ bool Tray::init_indicator_api() {
       break;
     }
 
-    void* handle = dlopen("libappindicator3.so.1", RTLD_LAZY);
+    void* handle = dlopen("libayatana-appindicator3.so.1", RTLD_LAZY);
+    if (!handle) {
+      handle = dlopen("libappindicator3.so.1", RTLD_LAZY);
+    }
+
     if (!handle) {
       break;
     }
@@ -79,8 +83,7 @@ bool Tray::init_indicator_api() {
     if (!app_indicator_new_ || !app_indicator_set_status_ ||
         !app_indicator_set_icon_full_ ||
         !app_indicator_set_attention_icon_full_ || !app_indicator_set_label_ ||
-        !app_indicator_set_label_ || !app_indicator_get_label_ ||
-        !app_indicator_set_menu_) {
+        !app_indicator_get_label_ || !app_indicator_set_menu_) {
       break;
     }
 
@@ -93,8 +96,6 @@ bool Tray::init_indicator_api() {
 }
 
 bool Tray::create_indicator(const char* tray_id) {
-  // printf("SystemTray::create_indicator tray_id: %s\n", tray_id);
-
   bool ret = false;
 
   do {
@@ -143,8 +144,6 @@ void Tray::handle_method_call(FlMethodCall* method_call) {
 
   const gchar* method = fl_method_call_get_name(method_call);
   FlValue* args = fl_method_call_get_args(method_call);
-
-  // g_print("method call %s\n", method);
 
   if (strcmp(method, kInitSystemTray) == 0) {
     response = init_tray(args);
@@ -335,11 +334,6 @@ bool Tray::init_tray(const char* tray_id) {
 bool Tray::set_tray_info(const char* title,
                          const char* icon_path,
                          const char* toolTip) {
-  printf(
-      "SystemTray::set_system_tray_info title: %s, icon_path: %s, toolTip: "
-      "%s\n",
-      title, icon_path, toolTip);
-
   bool ret = false;
 
   do {

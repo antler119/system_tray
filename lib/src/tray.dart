@@ -43,13 +43,14 @@ class SystemTray {
     String? title,
     String? toolTip,
     bool isTemplate = false,
+    bool isInstalled = false,
   }) async {
     bool value = await _platformChannel.invokeMethod(
       _kInitSystemTray,
       <String, dynamic>{
         _kTrayIdKey: const Uuid().v1(),
         _kTitleKey: title,
-        _kIconPathKey: await Utils.getIcon(iconPath),
+        _kIconPathKey: isInstalled ? iconPath : await Utils.getIcon(iconPath),
         _kToolTipKey: toolTip,
         _kIsTemplateKey: isTemplate,
       },
@@ -63,12 +64,13 @@ class SystemTray {
     String? iconPath,
     String? toolTip,
     bool isTemplate = false,
+    bool isInstalled = false,
   }) async {
     bool value = await _platformChannel.invokeMethod(
       _kSetSystemTrayInfo,
       <String, dynamic>{
         _kTitleKey: title,
-        _kIconPathKey: await Utils.getIcon(iconPath),
+        _kIconPathKey: isInstalled ? iconPath : await Utils.getIcon(iconPath),
         _kToolTipKey: toolTip,
         _kIsTemplateKey: isTemplate,
       },
@@ -77,8 +79,8 @@ class SystemTray {
   }
 
   /// (Windows\macOS\Linux) Sets the image associated with this tray icon
-  Future<void> setImage(String image, {bool isTemplate = false}) async {
-    await setSystemTrayInfo(iconPath: image, isTemplate: isTemplate);
+  Future<void> setImage(String image, {bool isTemplate = false, bool isInstalled = false}) async {
+    await setSystemTrayInfo(iconPath: image, isTemplate: isTemplate, isInstalled: isInstalled);
   }
 
   /// (Windows\macOS) Sets the hover text for this tray icon.

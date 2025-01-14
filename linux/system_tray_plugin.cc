@@ -48,7 +48,7 @@ static void system_tray_plugin_handle_method_call(SystemTrayPlugin* self,
 
   const gchar* method = fl_method_call_get_name(method_call);
 
-  g_print("method call %s\n", method);
+  // g_print("method call %s\n", method);
 
   if (strcmp(method, kInitAppWindow) == 0 ||
       strcmp(method, kShowAppWindow) == 0 ||

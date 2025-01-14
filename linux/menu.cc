@@ -325,7 +325,7 @@ GtkWidget* Menu::value_to_menu_item(int64_t menu_id, FlValue* value) {
 
       gtk_widget_show_all(menu_item);
     } else {
-      g_print("value_to_menu_item type:%s, label:%s\n", type, label);
+      // g_print("value_to_menu_item type:%s, label:%s\n", type, label);
     }
 
     if (!menu_item) {
