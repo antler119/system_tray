@@ -1,3 +1,4 @@
+import Cocoa
 import FlutterMacOS
 
 let kInitSystemTray = "InitSystemTray"
@@ -15,6 +16,8 @@ private let kTitleKey = "title"
 private let kIconPathKey = "iconpath"
 private let kToolTipKey = "tooltip"
 private let kIsTemplateKey = "is_template"
+private let kFontFamilyKey = "font_family"
+private let kPreferMonospacedFallbackKey = "prefer_monospaced_fallback"
 
 private let kSystemTrayEventClick = "click"
 private let kSystemTrayEventRightClick = "right-click"
@@ -66,6 +69,61 @@ class Tray: NSObject, NSMenuDelegate {
     statusItem?.menu = nil
   }
 
+  /// Sets the title. If fontFamily is provided, uses NSAttributedString.
+  /// Otherwise, falls back to standard system behavior.
+  private func updateTitle(_ title: String, fontFamily: String?, preferMonospacedFallback: Bool = false) {
+    guard let button = statusItem?.button else { return }
+
+    // Case 1: No font family requested. Use standard behavior.
+    guard let family = fontFamily, !family.isEmpty else {
+      button.title = title
+      button.attributedTitle = nil // Clear any previous attributes
+      return
+    }
+
+    // Case 2: User requested a custom font
+    let fontSize: CGFloat = 13.0
+    var font: NSFont?
+
+    // Check for special "system_monospaced" keyword
+    if family == "system_monospaced" {
+      if #available(macOS 10.15, *) {
+        font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+      } else {
+        font = NSFont.userFixedPitchFont(ofSize: fontSize)
+      }
+    } else {
+      // Try to load the custom font by name (e.g., "Menlo", "Arial", "Fira Code")
+      // Note: Use the PostScript name or family name as shown in Font Book
+      font = NSFont(name: family, size: fontSize)
+      
+      // If custom font fails to load, use fallback based on user preference
+      if font == nil {
+        if preferMonospacedFallback {
+          // Fallback to monospaced font
+          if #available(macOS 10.15, *) {
+            font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+          } else {
+            font = NSFont.userFixedPitchFont(ofSize: fontSize)
+          }
+        } else {
+          // Fallback to standard system font (proportional)
+          font = NSFont.systemFont(ofSize: fontSize)
+        }
+      }
+    }
+
+    // Apply the font (either custom, system_monospaced, or fallback)
+    if let validFont = font {
+      let attributes: [NSAttributedString.Key: Any] = [.font: validFont]
+      button.attributedTitle = NSAttributedString(string: title, attributes: attributes)
+    } else {
+      // This should rarely happen, but if all font loading fails, use standard title
+      button.title = title
+      button.attributedTitle = nil
+    }
+  }
+
   @objc func onSystemTrayEventCallback(sender: NSStatusBarButton) {
     if let event = NSApp.currentEvent {
       switch event.type {
@@ -85,6 +143,8 @@ class Tray: NSObject, NSMenuDelegate {
     let base64Icon = arguments[kIconPathKey] as? String
     let toolTip = arguments[kToolTipKey] as? String
     let isTemplate = arguments[kIsTemplateKey] as? Bool
+    let fontFamily = arguments[kFontFamilyKey] as? String // Extract font family
+    let preferMonospacedFallback = arguments[kPreferMonospacedFallbackKey] as? Bool ?? false
 
     if statusItem != nil {
       result(false)
@@ -104,7 +164,8 @@ class Tray: NSObject, NSMenuDelegate {
     }
 
     if let title = title {
-      statusItem?.button?.title = title
+      // Use the new update helper
+      updateTitle(title, fontFamily: fontFamily, preferMonospacedFallback: preferMonospacedFallback)
     }
 
     if let base64Icon = base64Icon {
@@ -128,13 +189,16 @@ class Tray: NSObject, NSMenuDelegate {
     let base64Icon = arguments[kIconPathKey] as? String
     let toolTip = arguments[kToolTipKey] as? String
     let isTemplate = arguments[kIsTemplateKey] as? Bool
+    let fontFamily = arguments[kFontFamilyKey] as? String // Extract font family
+    let preferMonospacedFallback = arguments[kPreferMonospacedFallbackKey] as? Bool ?? false
 
     if let toolTip = toolTip {
       statusItem?.button?.toolTip = toolTip
     }
 
     if let title = title {
-      statusItem?.button?.title = title
+      // Use the new update helper
+      updateTitle(title, fontFamily: fontFamily, preferMonospacedFallback: preferMonospacedFallback)
     }
 
     if let base64Icon = base64Icon {

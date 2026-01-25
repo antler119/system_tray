@@ -22,6 +22,8 @@ const String _kTitleKey = "title";
 const String _kIconPathKey = "iconpath";
 const String _kToolTipKey = "tooltip";
 const String _kIsTemplateKey = "is_template";
+const String _kFontFamilyKey = "font_family";
+const String _kPreferMonospacedFallbackKey = "prefer_monospaced_fallback";
 
 /// A callback provided to [SystemTray] to handle system tray click event.
 typedef SystemTrayEventCallback = void Function(String eventName);
@@ -43,6 +45,8 @@ class SystemTray {
     String? title,
     String? toolTip,
     bool isTemplate = false,
+    String? fontFamily,
+    bool preferMonospacedFallback = false,
   }) async {
     bool value = await _platformChannel.invokeMethod(
       _kInitSystemTray,
@@ -52,6 +56,8 @@ class SystemTray {
         _kIconPathKey: await Utils.getIcon(iconPath),
         _kToolTipKey: toolTip,
         _kIsTemplateKey: isTemplate,
+        _kFontFamilyKey: fontFamily,
+        _kPreferMonospacedFallbackKey: preferMonospacedFallback,
       },
     );
     return value;
@@ -63,6 +69,8 @@ class SystemTray {
     String? iconPath,
     String? toolTip,
     bool isTemplate = false,
+    String? fontFamily,
+    bool preferMonospacedFallback = false,
   }) async {
     bool value = await _platformChannel.invokeMethod(
       _kSetSystemTrayInfo,
@@ -71,6 +79,8 @@ class SystemTray {
         _kIconPathKey: await Utils.getIcon(iconPath),
         _kToolTipKey: toolTip,
         _kIsTemplateKey: isTemplate,
+        _kFontFamilyKey: fontFamily,
+        _kPreferMonospacedFallbackKey: preferMonospacedFallback,
       },
     );
     return value;
@@ -87,8 +97,22 @@ class SystemTray {
   }
 
   /// (macOS) Sets the title displayed next to the tray icon in the status bar.
-  Future<void> setTitle(String title) async {
-    await setSystemTrayInfo(title: title);
+  /// 
+  /// **Important:** If you're using a custom font, you must pass `fontFamily` 
+  /// (and optionally `preferMonospacedFallback`) every time you update the title,
+  /// otherwise it will revert to the standard system font.
+  /// 
+  /// For convenience, you can also use [setSystemTrayInfo] directly.
+  Future<void> setTitle(
+    String title, {
+    String? fontFamily,
+    bool preferMonospacedFallback = false,
+  }) async {
+    await setSystemTrayInfo(
+      title: title,
+      fontFamily: fontFamily,
+      preferMonospacedFallback: preferMonospacedFallback,
+    );
   }
 
   /// (macOS) Returns string - the title displayed next to the tray icon in the status bar
