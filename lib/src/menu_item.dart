@@ -1,15 +1,5 @@
-import 'package:flutter/services.dart';
-import 'package:system_tray/src/utils.dart';
+import 'package:system_tray/src/platform/system_tray_platform_interface.dart';
 
-const String _kSetLabel = "SetLabel";
-const String _kSetImage = "SetImage";
-const String _kSetEnable = "SetEnable";
-const String _kSetCheck = "SetCheck";
-
-const String _kMenuIdKey = 'menu_id';
-const String _kMenuItemIdKey = 'menu_item_id';
-const String _kIdKey = 'id';
-const String _kTypeKey = 'type';
 const String _kMenuTypeLabel = 'label';
 const String _kMenuTypeCheckbox = 'checkbox';
 const String _kMenuTypeSubMenu = 'submenu';
@@ -19,6 +9,8 @@ const String _kImageKey = 'image';
 const String _kSubMenuKey = 'submenu';
 const String _kEnabledKey = 'enabled';
 const String _kCheckedKey = 'checked';
+const String _kIdKey = 'id';
+const String _kTypeKey = 'type';
 
 /// A callback provided to [MenuItemBase] to handle menu selection.
 typedef MenuItemSelectedCallback = void Function(MenuItemBase);
@@ -40,39 +32,24 @@ abstract class MenuItemBase {
   }
 
   Future<void> setLabel(String label) async {
-    bool result = await channel?.invokeMethod(_kSetLabel, {
-      _kMenuIdKey: menuId ?? -1,
-      _kMenuItemIdKey: menuItemId ?? -1,
-      _kLabelKey: label,
-    });
-    if (result) {
-      this.label = label;
+    if (menuId != null && menuItemId != null) {
+      await SystemTrayPlatform.instance.setMenuItemLabel(menuId!, menuItemId!, label);
     }
+    this.label = label;
   }
 
   Future<void> setImage(String image) async {
-    String? imageAbsolutePath = await Utils.getIcon(image);
-
-    bool result = await channel?.invokeMethod(_kSetImage, {
-      _kMenuIdKey: menuId ?? -1,
-      _kMenuItemIdKey: menuItemId ?? -1,
-      _kImageKey: imageAbsolutePath,
-    });
-    if (result) {
-      this.image = image;
-      this.imageAbsolutePath = imageAbsolutePath;
+    if (menuId != null && menuItemId != null) {
+      await SystemTrayPlatform.instance.setMenuItemImage(menuId!, menuItemId!, image);
     }
+    this.image = image;
   }
 
   Future<void> setEnable(bool enabled) async {
-    bool result = await channel?.invokeMethod(_kSetEnable, {
-      _kMenuIdKey: menuId ?? -1,
-      _kMenuItemIdKey: menuItemId ?? -1,
-      _kEnabledKey: enabled,
-    });
-    if (result) {
-      this.enabled = enabled;
+    if (menuId != null && menuItemId != null) {
+      await SystemTrayPlatform.instance.setMenuItemEnable(menuId!, menuItemId!, enabled);
     }
+    this.enabled = enabled;
   }
 
   Future<void> setCheck(bool checked) async {
@@ -80,17 +57,12 @@ abstract class MenuItemBase {
       return;
     }
 
-    bool result = await channel?.invokeMethod(_kSetCheck, {
-      _kMenuIdKey: menuId ?? -1,
-      _kMenuItemIdKey: menuItemId ?? -1,
-      _kCheckedKey: checked,
-    });
-    if (result) {
-      this.checked = checked;
+    if (menuId != null && menuItemId != null) {
+      await SystemTrayPlatform.instance.setMenuItemCheck(menuId!, menuItemId!, checked);
     }
+    this.checked = checked;
   }
 
-  MethodChannel? channel;
   int? menuId;
   int? menuItemId;
   String? imageAbsolutePath;
