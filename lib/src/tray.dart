@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
 import 'menu.dart';
 import 'utils.dart';
+import 'system_tray_linux.dart';
 
 const String _kChannelName = "flutter/system_tray/tray";
 
@@ -29,7 +31,11 @@ typedef SystemTrayEventCallback = void Function(String eventName);
 /// Representation of system tray
 class SystemTray {
   SystemTray() {
-    _platformChannel.setMethodCallHandler(_callbackHandler);
+    if (Platform.isLinux) {
+      SystemTrayLinux.systemTrayEventCallback = _callbackHandlerSync;
+    } else {
+      _platformChannel.setMethodCallHandler(_callbackHandler);
+    }
   }
 
   static const MethodChannel _platformChannel = MethodChannel(_kChannelName);
@@ -44,6 +50,15 @@ class SystemTray {
     String? toolTip,
     bool isTemplate = false,
   }) async {
+    if (Platform.isLinux) {
+      return await SystemTrayLinux.initSystemTray(
+        trayId: const Uuid().v1(),
+        iconPath: await Utils.getIcon(iconPath) ?? '',
+        title: title,
+        toolTip: toolTip,
+        isTemplate: isTemplate,
+      );
+    }
     bool value = await _platformChannel.invokeMethod(
       _kInitSystemTray,
       <String, dynamic>{
@@ -64,6 +79,14 @@ class SystemTray {
     String? toolTip,
     bool isTemplate = false,
   }) async {
+    if (Platform.isLinux) {
+      return await SystemTrayLinux.setSystemTrayInfo(
+        title: title,
+        iconPath: await Utils.getIcon(iconPath),
+        toolTip: toolTip,
+        isTemplate: isTemplate,
+      );
+    }
     bool value = await _platformChannel.invokeMethod(
       _kSetSystemTrayInfo,
       <String, dynamic>{
@@ -93,6 +116,9 @@ class SystemTray {
 
   /// (macOS) Returns string - the title displayed next to the tray icon in the status bar
   Future<String> getTitle() async {
+    if (Platform.isLinux) {
+      return await SystemTrayLinux.getTitle();
+    }
     return await _platformChannel.invokeMethod(_kGetTitle);
   }
 
@@ -102,12 +128,20 @@ class SystemTray {
   /// For instance, special menus that are handled entirely on the native
   /// side might be added to the provided menus.
   Future<void> setContextMenu(Menu menu) async {
+    if (Platform.isLinux) {
+      await SystemTrayLinux.setContextMenu(menu.menuId);
+      return;
+    }
     await _platformChannel.invokeMethod(_kSetContextMenu, menu.menuId);
   }
 
   /// Pop up the context menu.
   ///
   Future<void> popUpContextMenu() async {
+    if (Platform.isLinux) {
+      await SystemTrayLinux.popUpContextMenu();
+      return;
+    }
     await _platformChannel.invokeMethod(_kPopupContextMenu);
   }
 
@@ -125,7 +159,17 @@ class SystemTray {
     }
   }
 
+  void _callbackHandlerSync(String eventName) {
+    if (_systemTrayEventCallback != null) {
+      _systemTrayEventCallback!(eventName);
+    }
+  }
+
   Future<void> destroy() async {
+    if (Platform.isLinux) {
+      await SystemTrayLinux.destroySystemTray();
+      return;
+    }
     await _platformChannel.invokeMethod(_kDestroySystemTray);
   }
 }

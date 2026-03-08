@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 
@@ -20,20 +21,24 @@ class AppWindow {
 
   /// Show native window
   Future<void> show() async {
+    if (Platform.isLinux) return;
     await _platformChannel.invokeMethod(_kShowAppWindow);
   }
 
   /// Hide native window
   Future<void> hide() async {
+    if (Platform.isLinux) return;
     await _platformChannel.invokeMethod(_kHideAppWindow);
   }
 
   /// Close native window
   Future<void> close() async {
+    if (Platform.isLinux) return;
     await _platformChannel.invokeMethod(_kCloseAppWindow);
   }
 
   void _init() async {
+    if (Platform.isLinux) return;
     await _platformChannel.invokeMethod(_kInitAppWindow);
   }
 

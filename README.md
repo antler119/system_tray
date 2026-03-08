@@ -84,7 +84,9 @@ sudo apt-get install libayatana-appindicator3-dev
         </td>
        <td>
           <ul>
+            <li>title</li>
             <li>icon</li>
+            <li>toolTip</li>
           </ul>
         </td>
     </tr>
@@ -100,14 +102,14 @@ sudo apt-get install libayatana-appindicator3-dev
         <td>Modify the tray tooltip</td>
         <td>✔️</td>
         <td>✔️</td>
-        <td>➖</td>
+        <td>✔️</td>
     </tr>
     <tr>
         <td>setTitle / getTitle</td>
         <td>Set / Get the tray title</td>
         <td>➖</td>
         <td>✔️</td>
-        <td>➖</td>
+        <td>✔️</td>
     </tr>
     <tr>
         <td>setContextMenu</td>
@@ -147,7 +149,14 @@ sudo apt-get install libayatana-appindicator3-dev
             <li>right-click</li>
           </ul>
         </td>
-        <td>➖</td>
+        <td>
+          <ul>
+            <li>click</li>
+            <li>right-click</li>
+            <li>double-click</li>
+            <li>scroll</li>
+          </ul>
+        </td>
     </tr>
 </table>
 

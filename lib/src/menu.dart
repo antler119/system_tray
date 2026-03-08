@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'menu_item.dart';
+import 'system_tray_linux.dart';
 import 'utils.dart';
 
 const String _kChannelName = "flutter/system_tray/menu_manager";
@@ -31,7 +34,16 @@ class Menu {
   bool _updateInProgress = false;
 
   Menu() {
-    _platformChannel.setMethodCallHandler(_callbackHandler);
+    if (Platform.isLinux) {
+      SystemTrayLinux.menuItemSelectedCallback = (menuId, menuItemId) {
+        _callbackHandler(MethodCall(_kMenuItemSelectedCallbackMethod, {
+          _kMenuIdKey: menuId,
+          _kMenuItemIdKey: menuItemId,
+        }));
+      };
+    } else {
+      _platformChannel.setMethodCallHandler(_callbackHandler);
+    }
   }
 
   int get menuId => _menuId;
@@ -44,6 +56,10 @@ class Menu {
     _menuId = _nextMenuId++;
     _menus = menus;
     _menuMap.putIfAbsent(_menuId, () => this);
+    if (Platform.isLinux) {
+      _channelRepresentationForMenusSync(menus);
+      return await SystemTrayLinux.buildMenu(_menuId, menus);
+    }
     return await _createContextMenu(_menus!);
   }
 
@@ -111,6 +127,11 @@ class Menu {
     await _channelRepresentationForMenu(menus);
   }
 
+  void _channelRepresentationForMenusSync(List<MenuItemBase> menus) {
+    _menuItemId = 1;
+    _channelRepresentationForMenuSync(menus);
+  }
+
   Future<void> _channelRepresentationForMenu(List<MenuItemBase> menus) async {
     for (final menuItem in menus) {
       menuItem.channel = _platformChannel;
@@ -120,6 +141,18 @@ class Menu {
 
       if (menuItem is SubMenu) {
         await _channelRepresentationForMenu(menuItem.children);
+      }
+    }
+  }
+
+  void _channelRepresentationForMenuSync(List<MenuItemBase> menus) {
+    for (final menuItem in menus) {
+      menuItem.channel = _platformChannel;
+      menuItem.menuId = menuId;
+      menuItem.menuItemId = nextMenuItemId;
+
+      if (menuItem is SubMenu) {
+        _channelRepresentationForMenuSync(menuItem.children);
       }
     }
   }

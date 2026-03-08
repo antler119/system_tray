@@ -8,6 +8,7 @@ environment:
   flutter: ">=1.20.0"
 
 dependencies:
+  dart_xdg_status_notifier_item: ^1.1.0
   flutter:
     sdk: flutter
   path: ^1.8.0
@@ -30,7 +31,7 @@ flutter:
   plugin:
     platforms:
       linux:
-        pluginClass: SystemTrayPlugin
+        dartPluginClass: SystemTrayLinuxPlugin
       macos:
         pluginClass: SystemTrayPlugin
       windows:

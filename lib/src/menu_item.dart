@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:system_tray/src/utils.dart';
+
+import 'system_tray_linux.dart';
 
 const String _kSetLabel = "SetLabel";
 const String _kSetImage = "SetImage";
@@ -40,6 +44,12 @@ abstract class MenuItemBase {
   }
 
   Future<void> setLabel(String label) async {
+    if (Platform.isLinux) {
+      await SystemTrayLinux.setMenuItemLabel(
+          menuId ?? -1, menuItemId ?? -1, label);
+      this.label = label;
+      return;
+    }
     bool result = await channel?.invokeMethod(_kSetLabel, {
       _kMenuIdKey: menuId ?? -1,
       _kMenuItemIdKey: menuItemId ?? -1,
@@ -53,6 +63,14 @@ abstract class MenuItemBase {
   Future<void> setImage(String image) async {
     String? imageAbsolutePath = await Utils.getIcon(image);
 
+    if (Platform.isLinux) {
+      await SystemTrayLinux.setMenuItemImage(
+          menuId ?? -1, menuItemId ?? -1, imageAbsolutePath ?? '');
+      this.image = image;
+      this.imageAbsolutePath = imageAbsolutePath;
+      return;
+    }
+
     bool result = await channel?.invokeMethod(_kSetImage, {
       _kMenuIdKey: menuId ?? -1,
       _kMenuItemIdKey: menuItemId ?? -1,
@@ -65,6 +83,12 @@ abstract class MenuItemBase {
   }
 
   Future<void> setEnable(bool enabled) async {
+    if (Platform.isLinux) {
+      await SystemTrayLinux.setMenuItemEnable(
+          menuId ?? -1, menuItemId ?? -1, enabled);
+      this.enabled = enabled;
+      return;
+    }
     bool result = await channel?.invokeMethod(_kSetEnable, {
       _kMenuIdKey: menuId ?? -1,
       _kMenuItemIdKey: menuItemId ?? -1,
@@ -77,6 +101,13 @@ abstract class MenuItemBase {
 
   Future<void> setCheck(bool checked) async {
     if (type != _kMenuTypeCheckbox) {
+      return;
+    }
+
+    if (Platform.isLinux) {
+      await SystemTrayLinux.setMenuItemCheck(
+          menuId ?? -1, menuItemId ?? -1, checked);
+      this.checked = checked;
       return;
     }
 
